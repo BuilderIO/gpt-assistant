@@ -18,6 +18,7 @@ export async function getWebsiteContents(url: string) {
   body.find("audio").remove();
   body.find("canvas").remove();
   body.find("object").remove();
+  body.find("*").removeAttr("class");
 
   return body.html()?.replace(/\s+/g, " ").trim();
 }

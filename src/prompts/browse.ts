@@ -1,7 +1,7 @@
 import { getWebsiteContents } from "~/functions/get-website-contents";
 
 const previousSteps = `
-
+loadWebsite("https://www.opentable.com")
 `.trim();
 
 const prompt = `
@@ -33,6 +33,8 @@ The prompt is: ${prompt}
 
 ${actions}
 
+The current website content is:
+${await getWebsiteContents("https://www.opentable.com")}
 
 What will the one next action you will take be, from the actions provided above? Please answer with only 1 next step. And use the functions above, like:
 click("#some-button")
