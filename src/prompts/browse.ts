@@ -1,3 +1,5 @@
+import { getWebsiteContents } from "~/functions/get-website-contents";
+
 export async function getBrowsePrompt() {
   return `
 
@@ -8,16 +10,14 @@ Do a google search
 
 The previous steps you did:
 - loadWebsite("https://www.google.com")
+- input(".lst", "dogs")
 
 The actions you can take:
 - click something, like: click(".selector")
 - input something, like: input(".selector", "text")
 
 The current website content is:
-<form>
-  <input name="q" type="text" />
-  <button>Search</button>
-</form>
+${await getWebsiteContents("https://www.google.com")}
 
 The prompt is: do a google search for dogs
 

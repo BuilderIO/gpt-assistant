@@ -19,5 +19,5 @@ export async function getWebsiteContents(url: string) {
   body.find("canvas").remove();
   body.find("object").remove();
 
-  return body.html();
+  return body.html()?.replace(/\s+/g, " ").trim();
 }

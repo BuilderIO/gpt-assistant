@@ -47,9 +47,9 @@ export default component$(() => {
   });
 
   return (
-    <div class="flex gap-4 p-4">
+    <div class="flex gap-10 p-10 max-w-[1200px] mx-auto">
       <form
-        class="flex flex-col w-full max-w-xl px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
+        class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
         preventdefault:submit
         onSubmit$={async () => {
           update();
@@ -61,6 +61,7 @@ export default component$(() => {
           style={{
             "box-sizing": "content-box",
             "min-height": "100px",
+            "max-height": "80vh",
           }}
           onFocus$={(e, el) => {
             autogrow(el);
@@ -77,7 +78,7 @@ export default component$(() => {
       </form>
       <div class="w-full">
         {output.value && (
-          <div class="flex flex-col w-full max-w-xl px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md my-6">
+          <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
             <h2 class="text-2xl font-bold text-center">Output</h2>
             <div class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
               <RenderResult
