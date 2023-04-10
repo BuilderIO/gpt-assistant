@@ -3,6 +3,8 @@ import { component$, useSignal } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { getQuestions } from "~/functions/questions";
 import { streamCompletion } from "../functions/stream-completion";
+import { RenderResult } from "~/components/render-result/render-result";
+import { Loading } from "~/components/loading/loading";
 
 async function getDefaultPrompt() {
   return `
@@ -37,7 +39,7 @@ What is the first thing you would need to do? Your options are:
 
 Please answer with only 1 next step. And use the functions above, like:
 
-ask("What is the first thing you would need to do?")
+ask("What is your location?")
 
 or
 
@@ -46,6 +48,10 @@ loadWebsite("https://www.google.com")
 or 
 
 interactWithWebsite("https://www.google.com", "input[name='q']", "input", "book a restaurant")
+
+If you need to ask multiple questions, put them on separate lines, like:
+ask("What is your location?")
+ask("What type of event would you like to go to?")
 `;
 }
 
@@ -60,6 +66,7 @@ function autogrow(el: HTMLTextAreaElement) {
 export default component$(() => {
   const prompt = useSignal("");
   const output = useSignal("");
+  const loading = useSignal(false);
 
   useTask$(async () => {
     prompt.value = await getDefaultPrompt();
@@ -72,9 +79,12 @@ export default component$(() => {
         preventdefault:submit
         onSubmit$={async () => {
           output.value = "";
+          loading.value = true;
           await streamCompletion(prompt.value, (value) => {
             output.value += value;
           });
+          loading.value = false;
+          console.debug("Final value:", output.value);
         }}
       >
         <h1 class="text-2xl font-bold text-center">AI Agent</h1>
@@ -85,6 +95,9 @@ export default component$(() => {
           }}
           onFocus$={(e, el) => {
             autogrow(el);
+          }}
+          onBlur$={(e, el) => {
+            el.style.height = "auto";
           }}
           onKeydown$={(e, el) => {
             autogrow(el);
@@ -100,10 +113,11 @@ export default component$(() => {
         <div class="flex flex-col w-full max-w-xl px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md my-6">
           <h2 class="text-2xl font-bold text-center">Output</h2>
           <div class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
-            {output.value}
+            <RenderResult response={output.value} />
           </div>
         </div>
       )}
+      {loading.value && <Loading />}
     </>
   );
 });
