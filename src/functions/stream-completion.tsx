@@ -9,6 +9,7 @@ export async function streamCompletion(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      model: 'gpt-4',
       prompt: [
         {
           content: prompt,
