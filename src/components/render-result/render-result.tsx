@@ -1,3 +1,4 @@
+import type { PropFunction } from "@builder.io/qwik";
 import { Fragment, component$ } from "@builder.io/qwik";
 import { Question } from "../question/question";
 
@@ -36,24 +37,27 @@ function parseTextToBlocks(text: string): Block[] {
   return blocks;
 }
 
-export const RenderResult = component$((props: { response: string }) => {
-  const blocks = parseTextToBlocks(props.response);
+export const RenderResult = component$(
+  (props: { response: string; onUpdate: PropFunction<() => void> }) => {
+    const blocks = parseTextToBlocks(props.response);
 
-  return (
-    <>
-      {blocks.map((block) => {
-        if (block.type === "text") {
-          return <Fragment key={block.text}>{block.text}</Fragment>;
-        } else if (block.type === "question") {
-          return (
-            <Question
-              key={block.question}
-              isPartial={block.isPartial}
-              question={block.question}
-            />
-          );
-        }
-      })}
-    </>
-  );
-});
+    return (
+      <>
+        {blocks.map((block) => {
+          if (block.type === "text") {
+            return <Fragment key={block.text}>{block.text}</Fragment>;
+          } else if (block.type === "question") {
+            return (
+              <Question
+                onUpdate={props.onUpdate}
+                key={block.question}
+                isPartial={block.isPartial}
+                question={block.question}
+              />
+            );
+          }
+        })}
+      </>
+    );
+  }
+);
