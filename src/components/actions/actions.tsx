@@ -21,6 +21,15 @@ export type ActionWithId = {
   action: BrowserAction;
 };
 
+const savePageContents = server$(async (html: string, url: string) => {
+  const prisma = new PrismaClient();
+  await prisma.browserState.upsert({
+    where: { id: 1 },
+    update: { html, url },
+    create: { id: 1, html, url },
+  });
+});
+
 export const getActions = server$(async () => {
   const prisma = new PrismaClient();
   return (await prisma.actions.findMany()).map(
@@ -122,18 +131,12 @@ export const Actions = component$((props: { class?: string }) => {
             onClick$={async () => {
               loading.value = true;
               const url = (actions.value[0].action as NavigateAction).url;
+              console.log("url", url);
               const html = await getPageContents(
                 url,
                 actions.value.map((action) => action.action)
               );
-              server$(async () => {
-                const prisma = new PrismaClient();
-                await prisma.browserState.upsert({
-                  where: { id: 1 },
-                  update: { html, url },
-                  create: { id: 1, html, url },
-                });
-              })();
+              savePageContents(html, url);
               browserStateContext.value++;
               loading.value = false;
             }}

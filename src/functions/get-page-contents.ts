@@ -65,13 +65,13 @@ async function getMinimalPageHtml(page: Page) {
         });
       }
 
-      // Unwrap empty divs and spans
-      if (["div", "span"].includes(el.tagName.toLowerCase())) {
-        // Check has no attributes
-        if (!el.attributes.length) {
-          el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
-        }
-      }
+      // // Unwrap empty divs and spans
+      // if (["div", "span"].includes(el.tagName.toLowerCase())) {
+      //   // Check has no attributes
+      //   if (!el.attributes.length) {
+      //     el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
+      //   }
+      // }
     });
 
     return main.innerHTML.replace(/\s+/g, " ").trim();

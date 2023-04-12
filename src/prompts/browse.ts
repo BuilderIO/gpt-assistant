@@ -1,17 +1,25 @@
 import { server$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { getActionsWithoutId } from "~/components/actions/actions";
+import { BrowserStateSafeType } from "~/components/browser-state/browser-state";
 
 const getPreviousSteps = async () =>
   `
 ${JSON.stringify(await getActionsWithoutId())}
 `.trim();
 
-export const getBrowserState = server$(async () => {
-  const prisma = new PrismaClient();
-  const browserState = await prisma.browserState.findFirst();
-  return browserState;
-});
+export const getBrowserState = server$(
+  async (): Promise<BrowserStateSafeType | null> => {
+    const prisma = new PrismaClient();
+    const browserState = await prisma.browserState.findFirst();
+    return browserState
+      ? {
+          ...browserState,
+          id: String(browserState.id),
+        }
+      : null;
+  }
+);
 
 export const websiteContents = async () => {
   const browserState = await getBrowserState();

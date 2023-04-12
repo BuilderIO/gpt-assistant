@@ -5,9 +5,13 @@ import type { BrowserState as BrowserStateType } from "@prisma/client";
 import { getBrowserState } from "~/prompts/browse";
 import { Loading } from "../loading/loading";
 
+export type BrowserStateSafeType = Omit<BrowserStateType, "id"> & {
+  id: string;
+};
+
 export const BrowserState = component$(() => {
   const browserStateContext = useContext(BrowserStateContext);
-  const browserState = useSignal<BrowserStateType | null>(null);
+  const browserState = useSignal<BrowserStateSafeType | null>(null);
   const loading = useSignal(false);
 
   useTask$(async ({ track }) => {
@@ -26,7 +30,15 @@ export const BrowserState = component$(() => {
             Browser State
           </h3>
           <pre class="text-sm text-gray-500">{browserState.value.url}</pre>
-          <pre class="text-sm text-gray-500">{browserState.value.html}</pre>
+          {browserState.value.html && (
+            <>
+              <pre class="text-sm text-gray-500">{browserState.value.html}</pre>
+              <div
+                class="overflow-auto"
+                dangerouslySetInnerHTML={browserState.value.html}
+              />
+            </>
+          )}
         </Card>
       )}
     </>
