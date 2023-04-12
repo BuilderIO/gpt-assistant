@@ -1,21 +1,28 @@
 import { server$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { getActionsWithoutId } from "~/components/actions/actions";
-import { getPageContents } from "~/functions/get-page-contents";
 
 const getPreviousSteps = async () =>
   `
 ${JSON.stringify(await getActionsWithoutId())}
 `.trim();
 
-export const websiteContents = async () =>
-  `
+export const getBrowserState = server$(async () => {
+  const prisma = new PrismaClient();
+  const browserState = await prisma.browserState.findFirst();
+  return browserState;
+});
+
+export const websiteContents = async () => {
+  const browserState = await getBrowserState();
+  if (browserState) {
+    `
 The current website content is:
-${await getPageContents(
-  "https://www.opentable.com",
-  await getActionsWithoutId()
-)}
-`.trim();
+${browserState.html}
+    `.trim();
+  }
+  return "";
+};
 
 export const getPrompt = server$(async () => {
   const prisma = new PrismaClient();

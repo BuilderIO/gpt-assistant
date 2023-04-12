@@ -1,20 +1,22 @@
+import type { Signal } from "@builder.io/qwik";
 import {
   $,
-  Signal,
+  component$,
   createContextId,
   useContextProvider,
+  useSignal,
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { component$, useSignal } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { streamCompletion } from "../functions/stream-completion";
-import { RenderResult } from "~/components/render-result/render-result";
+import { Actions } from "~/components/actions/actions";
 import { Loading } from "~/components/loading/loading";
+import { Prompt } from "~/components/prompt/prompt";
+import { RenderResult } from "~/components/render-result/render-result";
 import { getActionsPrompt } from "~/prompts/actions";
 import { getBrowsePrompt } from "~/prompts/browse";
-import { Actions } from "~/components/actions/actions";
-import { Prompt } from "~/components/prompt/prompt";
+import { streamCompletion } from "../functions/stream-completion";
+import { BrowserState } from "~/components/browser-state/browser-state";
 
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
@@ -30,6 +32,10 @@ export const ActionsContext = createContextId<Signal<number>>(
   "index.actionsContext"
 );
 
+export const BrowserStateContext = createContextId<Signal<number>>(
+  "index.browserStateContext"
+);
+
 function getDefaultPrompt() {
   return useActions ? getActionsPrompt() : getBrowsePrompt();
 }
@@ -39,9 +45,11 @@ export default component$(() => {
   const output = useSignal("");
   const loading = useSignal(false);
   const actionsKey = useSignal(0);
+  const browserStateKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
 
   useContextProvider(ActionsContext, actionsKey);
+  useContextProvider(BrowserStateContext, browserStateKey);
 
   useTask$(async () => {
     prompt.value = await getDefaultPrompt();
@@ -106,6 +114,7 @@ export default component$(() => {
           </div>
         )}
         {loading.value && <Loading />}
+        <BrowserState />
       </div>
     </div>
   );

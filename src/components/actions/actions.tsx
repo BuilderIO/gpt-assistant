@@ -13,7 +13,7 @@ import type {
   NavigateAction,
 } from "~/functions/get-page-contents";
 import { Card } from "../card/card";
-import { ActionsContext } from "~/routes";
+import { ActionsContext, BrowserStateContext } from "~/routes";
 import { getPageContents } from "~/functions/get-page-contents";
 
 export type ActionWithId = {
@@ -52,6 +52,7 @@ export const Actions = component$((props: { class?: string }) => {
   const loading = useSignal(false);
   const actions = useSignal([] as ActionWithId[]);
   const actionsContext = useContext(ActionsContext);
+  const browserStateContext = useContext(BrowserStateContext);
 
   const updateActions = $(async () => {
     loading.value = true;
@@ -129,10 +130,11 @@ export const Actions = component$((props: { class?: string }) => {
                 const prisma = new PrismaClient();
                 await prisma.browserState.upsert({
                   where: { id: 1 },
-                  update: { html },
-                  create: { id: 1, html },
+                  update: { html, url },
+                  create: { id: 1, html, url },
                 });
               })();
+              browserStateContext.value++;
               loading.value = false;
             }}
           >
