@@ -171,7 +171,8 @@ export const Actions = component$((props: { class?: string }) => {
                   await prisma.actions.deleteMany();
                   await prisma.browserState.deleteMany();
                 })();
-                updateActions();
+                actionsContext.value++;
+                browserStateContext.value++;
                 loading.value = false;
               }}
             >

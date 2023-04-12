@@ -1,6 +1,4 @@
-import type { Signal } from "@builder.io/qwik";
-import { useContext, useSignal } from "@builder.io/qwik";
-import { component$ } from "@builder.io/qwik";
+import { component$, useContext, useSignal } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import type { BrowserAction } from "~/functions/get-page-contents";
@@ -117,7 +115,7 @@ export const RenderResult = component$((props: { response: string }) => {
       {response ? (
         <RenderResponse response={response} />
       ) : (
-        <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
+        <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500 overflow-auto">
           {props.response}
         </pre>
       )}

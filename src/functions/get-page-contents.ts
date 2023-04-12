@@ -28,9 +28,9 @@ const headless = false;
 
 async function getMinimalPageHtml(page: Page) {
   return await page.evaluate(() => {
-    let main =
+    const main =
       document.querySelector("main") || document.querySelector("body")!;
-    main = main.cloneNode(true) as HTMLElement;
+    // main = main.cloneNode(true) as HTMLElement;
 
     main.querySelectorAll("script").forEach((el) => el.remove());
     main.querySelectorAll("style").forEach((el) => el.remove());
@@ -47,9 +47,9 @@ async function getMinimalPageHtml(page: Page) {
     main.querySelectorAll("object").forEach((el) => el.remove());
     main.querySelectorAll("[aria-hidden=true]").forEach((el) => el.remove());
 
-    for (const attr of ["class", "href", "target", "rel"]) {
-      main
-        .querySelectorAll(`[${attr}]`)
+    for (const attr of ["class", "target", "rel"]) {
+      [main as Element]
+        .concat(Array.from(main.querySelectorAll(`[${attr}]`)))
         .forEach((el) => el.removeAttribute(attr));
     }
 
@@ -74,11 +74,23 @@ async function getMinimalPageHtml(page: Page) {
       // }
     });
 
+    // Add all values to the HTML directly
+    main.querySelectorAll("input,textarea,select").forEach((_el) => {
+      const el = _el as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement;
+      if (el.value) {
+        el.setAttribute("value", el.value);
+      }
+    });
+
     return main.innerHTML.replace(/\s+/g, " ").trim();
   });
 }
 
-const debugBrowser = false;
+const debugBrowser =
+  process.env.DEBUG === "true" || process.env.DEBUG_BROWSER === "true";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -86,6 +98,13 @@ export const getPageContents = server$(
   async (url: string, prevActions: BrowserAction[] = [], maxLength = 10000) => {
     const browser = await puppeteer.launch({ headless });
     const page = await browser.newPage();
+    if (debugBrowser) {
+      page.on("console", (message) =>
+        console.log(
+          `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`
+        )
+      );
+    }
     await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
     );
@@ -109,6 +128,7 @@ export const getPageContents = server$(
       } else if (action.action === "input") {
         await page.type(action.selector, action.text);
       }
+      await delay(100);
       await page
         .waitForNetworkIdle({
           timeout: 2000,
