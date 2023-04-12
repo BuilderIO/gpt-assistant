@@ -10,13 +10,12 @@ import {
 } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Actions } from "~/components/actions/actions";
+import { BrowserState } from "~/components/browser-state/browser-state";
 import { Loading } from "~/components/loading/loading";
 import { Prompt } from "~/components/prompt/prompt";
 import { RenderResult } from "~/components/render-result/render-result";
-import { getActionsPrompt } from "~/prompts/actions";
 import { getBrowsePrompt } from "~/prompts/browse";
 import { streamCompletion } from "../functions/stream-completion";
-import { BrowserState } from "~/components/browser-state/browser-state";
 
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
@@ -25,8 +24,6 @@ function autogrow(el: HTMLTextAreaElement) {
     el.style.height = el.scrollHeight + "px";
   });
 }
-
-const useActions = false;
 
 export const ActionsContext = createContextId<Signal<number>>(
   "index.actionsContext"
@@ -37,7 +34,7 @@ export const BrowserStateContext = createContextId<Signal<number>>(
 );
 
 function getDefaultPrompt() {
-  return useActions ? getActionsPrompt() : getBrowsePrompt();
+  return getBrowsePrompt();
 }
 
 export default component$(() => {
@@ -71,9 +68,9 @@ export default component$(() => {
   });
 
   return (
-    <div class="flex gap-10 p-10 max-w-[1200px] mx-auto">
-      <div class="w-full flex flex-col">
-        <Prompt class="mb-6" />
+    <div class="grid grid-cols-3 gap-10 p-10 max-w-[1900px] mx-auto">
+      <div class="w-full flex flex-col gap-6">
+        <Prompt />
         <form
           class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
           preventdefault:submit
@@ -89,7 +86,7 @@ export default component$(() => {
             style={{
               "box-sizing": "content-box",
               "min-height": "100px",
-              "max-height": "80vh",
+              "max-height": "60vh",
             }}
             onFocus$={(e, el) => {
               autogrow(el);
@@ -105,8 +102,11 @@ export default component$(() => {
           </button>
         </form>
       </div>
+      <div class="w-full flex flex-col gap-6">
+        <BrowserState />
+        <Actions />
+      </div>
       <div class="w-full">
-        <Actions class="mb-6" />
         {output.value && (
           <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
             <h3 class="text-lg leading-6 font-medium text-gray-900">Output</h3>
@@ -114,7 +114,6 @@ export default component$(() => {
           </div>
         )}
         {loading.value && <Loading />}
-        <BrowserState />
       </div>
     </div>
   );

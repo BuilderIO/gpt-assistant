@@ -109,8 +109,13 @@ export const getPageContents = server$(
       } else if (action.action === "input") {
         await page.type(action.selector, action.text);
       }
-      await delay(100);
-      await page.waitForNetworkIdle();
+      await page
+        .waitForNetworkIdle({
+          timeout: 2000,
+        })
+        .catch(() => {
+          // Errors are thrown on timeout, but we don't care about that
+        });
     }
 
     const html = await getMinimalPageHtml(page);

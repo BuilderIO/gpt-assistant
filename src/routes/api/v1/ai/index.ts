@@ -17,7 +17,7 @@ const schema = z.object({
   key: z.string().optional(),
 });
 
-function attempt<T, ErrorType = Error>(fn: () => T): T | ErrorType {
+export function attempt<T, ErrorType = Error>(fn: () => T): T | ErrorType {
   try {
     return fn();
   } catch (err) {

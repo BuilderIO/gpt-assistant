@@ -29,14 +29,12 @@ export const BrowserState = component$(() => {
           <h3 class="text-lg leading-6 font-medium text-gray-900">
             Browser State
           </h3>
-          <pre class="text-sm text-gray-500">{browserState.value.url}</pre>
+          <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm">{browserState.value.url}</pre>
           {browserState.value.html && (
             <>
-              <pre class="text-sm text-gray-500">{browserState.value.html}</pre>
-              <div
-                class="overflow-auto"
-                dangerouslySetInnerHTML={browserState.value.html}
-              />
+              <pre class="text-sm text-gray-500 w-full overflow-auto">
+                {browserState.value.html}
+              </pre>
             </>
           )}
         </Card>

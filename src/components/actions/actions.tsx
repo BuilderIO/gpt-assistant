@@ -14,7 +14,6 @@ import type {
 } from "~/functions/get-page-contents";
 import { Card } from "../card/card";
 import { ActionsContext, BrowserStateContext } from "~/routes";
-import { getPageContents } from "~/functions/get-page-contents";
 
 export type ActionWithId = {
   id: string;
@@ -62,6 +61,7 @@ export const Actions = component$((props: { class?: string }) => {
   const actions = useSignal([] as ActionWithId[]);
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
+  const error = useSignal("");
 
   const updateActions = $(async () => {
     loading.value = true;
@@ -77,13 +77,12 @@ export const Actions = component$((props: { class?: string }) => {
   return (
     <Card class={props.class}>
       <h3 class="text-lg leading-6 font-medium text-gray-900">Actions</h3>
-      {loading.value && <Loading />}
 
       {actions.value.map((action) => {
         return (
-          <div key={action.id} class="flex flex-row space-x-4">
-            <pre class="border rounded p-4 bg-gray-100">
-              {JSON.stringify(action.action)}
+          <div key={action.id} class="relative flex flex-row space-x-4 w-full">
+            <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm w-full">
+              {JSON.stringify(action.action, null, 2)}
             </pre>
             <button
               onClick$={async () => {
@@ -97,6 +96,7 @@ export const Actions = component$((props: { class?: string }) => {
                 updateActions();
                 loading.value = false;
               }}
+              class="absolute bottom-4 right-4 opacity-50 hover:opacity-100"
             >
               Delete
             </button>
@@ -124,41 +124,61 @@ export const Actions = component$((props: { class?: string }) => {
           Add action
         </button>
       </Form>
-      {!!actions.value.length && (
-        <div class="flex gap-3">
-          <button
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-            onClick$={async () => {
-              loading.value = true;
-              const url = (actions.value[0].action as NavigateAction).url;
-              console.log("url", url);
-              const html = await getPageContents(
-                url,
-                actions.value.map((action) => action.action)
-              );
-              savePageContents(html, url);
-              browserStateContext.value++;
-              loading.value = false;
-            }}
-          >
-            Run Actions
-          </button>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-            onClick$={async () => {
-              loading.value = true;
-              await server$(async () => {
-                const prisma = new PrismaClient();
-                await prisma.actions.deleteMany();
-                await prisma.browserState.deleteMany();
-              })();
-              updateActions();
-              loading.value = false;
-            }}
-          >
-            Clear Actions
-          </button>
+      {error.value && (
+        <div class="text-red-500 border-4 border-red-300 p-4">
+          {error.value}
         </div>
+      )}
+      {loading.value ? (
+        <Loading />
+      ) : (
+        !!actions.value.length && (
+          <div class="flex gap-3">
+            <button
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+              onClick$={async () => {
+                error.value = "";
+                loading.value = true;
+                const url = (actions.value[0].action as NavigateAction).url;
+                const { html } = await fetch("/api/v1/run", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    actions: actions.value.map((action) => action.action),
+                    url,
+                  }),
+                }).then((res) => res.json());
+                try {
+                  await savePageContents(html, url);
+                  browserStateContext.value++;
+                } catch (err) {
+                  error.value = String(err);
+                } finally {
+                  loading.value = false;
+                }
+              }}
+            >
+              Run Actions
+            </button>
+            <button
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+              onClick$={async () => {
+                loading.value = true;
+                await server$(async () => {
+                  const prisma = new PrismaClient();
+                  await prisma.actions.deleteMany();
+                  await prisma.browserState.deleteMany();
+                })();
+                updateActions();
+                loading.value = false;
+              }}
+            >
+              Clear Actions
+            </button>
+          </div>
+        )
       )}
     </Card>
   );

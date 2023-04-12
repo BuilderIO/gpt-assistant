@@ -1,7 +1,7 @@
 import { server$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { getActionsWithoutId } from "~/components/actions/actions";
-import { BrowserStateSafeType } from "~/components/browser-state/browser-state";
+import type { BrowserStateSafeType } from "~/components/browser-state/browser-state";
 
 const getPreviousSteps = async () =>
   `
@@ -21,10 +21,10 @@ export const getBrowserState = server$(
   }
 );
 
-export const websiteContents = async () => {
+const websiteContents = async () => {
   const browserState = await getBrowserState();
   if (browserState) {
-    `
+    return `
 The current website content is:
 ${browserState.html}
     `.trim();
@@ -48,7 +48,7 @@ The actions you can take:
 `.trim();
 
 const useOnlyOneAction = true;
-const includeThought = true;
+const includeThought = false;
 
 export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
@@ -57,7 +57,7 @@ export async function getBrowsePrompt() {
 You browse the web based and take actions in a web browser based on a prompt.
 
 ${
-  previousSteps.length
+  previousSteps.length > 4
     ? `
 The previous steps you took were:
 ${previousSteps}
@@ -65,18 +65,22 @@ ${previousSteps}
     : ""
 }
 
+${await websiteContents()}
+
 The prompt is: ${await getPrompt()}
 
 ${actions}
 
 What will the next actions you will take be, from the actions provided above? Using the functions above, give me a list of actions to take next, as a JSON array like:
-{"actions":[{"action":"navigate","url":"https://www.a-website.com"}${
+${
+  includeThought ? '"actions":' : ""
+}[{"action":"navigate","url":"https://www.a-website.com"}${
     useOnlyOneAction
       ? ""
       : `
 {"action":"input","text":"A search"},
 {"action":"click","selector":"#some-button"}`
-  }]${includeThought ? `,"thought":"I need to do a thing"` : ""}}
+  }]${includeThought ? `,"thought":"I need to do a thing"}` : ""}
 
 ${
   includeThought
