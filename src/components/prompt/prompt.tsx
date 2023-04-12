@@ -36,16 +36,14 @@ export const Prompt = component$((props: { class?: string }) => {
 
   return (
     <Card class={props.class}>
-      <h1>Prompt</h1>
+      <h3 class="text-lg leading-6 font-medium text-gray-900">User Prompt</h3>
       <Form action={updatePromptAction}>
         <textarea
           onKeyPress$={(e) => {
-            console.log("keypress");
             if (
               e.key === "Enter" &&
               !(e.metaKey || e.shiftKey || e.ctrlKey || e.altKey)
             ) {
-              console.log("submit?");
               updatePromptAction.submit({
                 prompt: prompt.value,
               });
@@ -53,7 +51,7 @@ export const Prompt = component$((props: { class?: string }) => {
           }}
           placeholder="Your prompt"
           bind:value={prompt}
-          class="block w-full px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          class="block w-full px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
       </Form>
       {(loading.value || updatePromptAction.isRunning) && <Loading />}

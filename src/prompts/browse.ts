@@ -32,7 +32,8 @@ The actions you can take:
 - terminate the program, like: {"action":"terminate","reason":"The restaurant you wanted is not available"}
 `.trim();
 
-const useOnlyOneAction = false;
+const useOnlyOneAction = true;
+const includeThought = true;
 
 export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
@@ -54,17 +55,17 @@ The prompt is: ${await getPrompt()}
 ${actions}
 
 What will the next actions you will take be, from the actions provided above? Using the functions above, give me a list of actions to take next, as a JSON array like:
-[{"action":"navigate","url":"https://www.opentable.com"},
+[{"action":"navigate","url":"https://www.google.com"}${
+    useOnlyOneAction
+      ? ""
+      : `
 {"action":"input","text":"A search"},
-{"action":"click","selector":"#some-button"}]
+{"action":"click","selector":"#some-button"}`
+  }]
 
-Following that, print a "thought", that describes what you need to do and why you are taking those actions.
+Following that, print a "thought", that describes what you need to do and why you are taking those actions, on a new line.
 
 ${useOnlyOneAction ? `Please only output one next action` : ""}
-
-An example output would be:
-THOUGHT: I need to search for a restaurant
-[{"action":"input","text":"A search"}]
 
 `
     .replace(/\n{3,}/g, "\n\n")

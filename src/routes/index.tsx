@@ -59,7 +59,9 @@ export default component$(() => {
             update();
           }}
         >
-          <h1 class="text-2xl font-bold text-center">AI Agent</h1>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">
+            GPT Prompt
+          </h3>
           <textarea
             ref={promptTextarea}
             style={{
@@ -73,7 +75,7 @@ export default component$(() => {
             onKeydown$={(e, el) => {
               autogrow(el);
             }}
-            class="w-auto p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+            class="block w-auto px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             bind:value={prompt}
           />
           <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -82,7 +84,7 @@ export default component$(() => {
         </form>
       </div>
       <div class="w-full">
-        <Actions />
+        <Actions class="mb-6" />
         {output.value && (
           <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
             <h2 class="text-2xl font-bold text-center">Output</h2>
@@ -104,6 +106,6 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Welcome to Qwik",
+  title: "AI Agent",
   meta: [],
 };

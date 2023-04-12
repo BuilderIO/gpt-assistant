@@ -36,7 +36,7 @@ export const useCreateTaskAction = globalAction$(async ({ action }) => {
   return await createAction(JSON.parse(action));
 }, zod$({ action: z.string() }));
 
-export const Actions = component$(() => {
+export const Actions = component$((props: { class?: string }) => {
   const createTaskAction = useCreateTaskAction();
   const loading = useSignal(false);
   const actions = useSignal([] as ActionWithId[]);
@@ -52,8 +52,8 @@ export const Actions = component$(() => {
   });
 
   return (
-    <Card>
-      <h1>Actions</h1>
+    <Card class={props.class}>
+      <h3 class="text-lg leading-6 font-medium text-gray-900">Actions</h3>
       {loading.value && <Loading />}
 
       {actions.value.map((action) => {
