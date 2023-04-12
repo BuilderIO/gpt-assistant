@@ -7,6 +7,7 @@ import { Loading } from "~/components/loading/loading";
 import { getActionsPrompt } from "~/prompts/actions";
 import { getBrowsePrompt } from "~/prompts/browse";
 import { Actions } from "~/components/actions/actions";
+import { Prompt } from "~/components/prompt/prompt";
 
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
@@ -49,34 +50,37 @@ export default component$(() => {
 
   return (
     <div class="flex gap-10 p-10 max-w-[1200px] mx-auto">
-      <form
-        class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
-        preventdefault:submit
-        onSubmit$={async () => {
-          update();
-        }}
-      >
-        <h1 class="text-2xl font-bold text-center">AI Agent</h1>
-        <textarea
-          ref={promptTextarea}
-          style={{
-            "box-sizing": "content-box",
-            "min-height": "100px",
-            "max-height": "80vh",
+      <div class="w-full flex flex-col">
+        <Prompt class="mb-6" />
+        <form
+          class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
+          preventdefault:submit
+          onSubmit$={async () => {
+            update();
           }}
-          onFocus$={(e, el) => {
-            autogrow(el);
-          }}
-          onKeydown$={(e, el) => {
-            autogrow(el);
-          }}
-          class="w-auto p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
-          bind:value={prompt}
-        />
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Submit
-        </button>
-      </form>
+        >
+          <h1 class="text-2xl font-bold text-center">AI Agent</h1>
+          <textarea
+            ref={promptTextarea}
+            style={{
+              "box-sizing": "content-box",
+              "min-height": "100px",
+              "max-height": "80vh",
+            }}
+            onFocus$={(e, el) => {
+              autogrow(el);
+            }}
+            onKeydown$={(e, el) => {
+              autogrow(el);
+            }}
+            class="w-auto p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+            bind:value={prompt}
+          />
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Submit
+          </button>
+        </form>
+      </div>
       <div class="w-full">
         <Actions />
         {output.value && (
