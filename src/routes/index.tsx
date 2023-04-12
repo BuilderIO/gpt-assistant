@@ -6,6 +6,7 @@ import { RenderResult } from "~/components/render-result/render-result";
 import { Loading } from "~/components/loading/loading";
 import { getActionsPrompt } from "~/prompts/actions";
 import { getBrowsePrompt } from "~/prompts/browse";
+import { Actions } from "~/components/actions/actions";
 
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
@@ -77,6 +78,7 @@ export default component$(() => {
         </button>
       </form>
       <div class="w-full">
+        <Actions />
         {output.value && (
           <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
             <h2 class="text-2xl font-bold text-center">Output</h2>
