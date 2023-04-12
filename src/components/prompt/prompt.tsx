@@ -10,10 +10,8 @@ export const useUpdatePrompt = globalAction$(
     const prisma = new PrismaClient();
     await prisma.prompt.upsert({
       update: { text: prompt },
-      create: { text: prompt },
-      where: {
-        id: 1,
-      },
+      create: { text: prompt, id: 1 },
+      where: { id: 1 },
     });
   },
   zod$({

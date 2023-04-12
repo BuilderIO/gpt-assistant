@@ -1,9 +1,20 @@
-import { $, component$, useSignal, useTask$ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
 import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { Loading } from "../loading/loading";
-import type { BrowserAction } from "~/functions/get-page-contents";
+import type {
+  BrowserAction,
+  NavigateAction,
+} from "~/functions/get-page-contents";
 import { Card } from "../card/card";
+import { ActionsContext } from "~/routes";
+import { getPageContents } from "~/functions/get-page-contents";
 
 export type ActionWithId = {
   id: string;
@@ -40,6 +51,7 @@ export const Actions = component$((props: { class?: string }) => {
   const createTaskAction = useCreateTaskAction();
   const loading = useSignal(false);
   const actions = useSignal([] as ActionWithId[]);
+  const actionsContext = useContext(ActionsContext);
 
   const updateActions = $(async () => {
     loading.value = true;
@@ -47,7 +59,8 @@ export const Actions = component$((props: { class?: string }) => {
     loading.value = false;
   });
 
-  useTask$(async () => {
+  useTask$(async ({ track }) => {
+    track(() => actionsContext.value);
     await updateActions();
   });
 
@@ -101,36 +114,47 @@ export const Actions = component$((props: { class?: string }) => {
           Add action
         </button>
       </Form>
-      <div class="flex gap-3">
-        <button
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-          onClick$={async () => {
-            loading.value = true;
-            await server$(async () => {
-              const prisma = new PrismaClient();
-              await prisma.actions.deleteMany();
-            })();
-            updateActions();
-            loading.value = false;
-          }}
-        >
-          Run Actions
-        </button>
-        <button
-          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-          onClick$={async () => {
-            loading.value = true;
-            await server$(async () => {
-              const prisma = new PrismaClient();
-              await prisma.actions.deleteMany();
-            })();
-            updateActions();
-            loading.value = false;
-          }}
-        >
-          Clear Actions
-        </button>
-      </div>
+      {!!actions.value.length && (
+        <div class="flex gap-3">
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+            onClick$={async () => {
+              loading.value = true;
+              const url = (actions.value[0].action as NavigateAction).url;
+              const html = await getPageContents(
+                url,
+                actions.value.map((action) => action.action)
+              );
+              server$(async () => {
+                const prisma = new PrismaClient();
+                await prisma.browserState.upsert({
+                  where: { id: 1 },
+                  update: { html },
+                  create: { id: 1, html },
+                });
+              })();
+              loading.value = false;
+            }}
+          >
+            Run Actions
+          </button>
+          <button
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+            onClick$={async () => {
+              loading.value = true;
+              await server$(async () => {
+                const prisma = new PrismaClient();
+                await prisma.actions.deleteMany();
+                await prisma.browserState.deleteMany();
+              })();
+              updateActions();
+              loading.value = false;
+            }}
+          >
+            Clear Actions
+          </button>
+        </div>
+      )}
     </Card>
   );
 });

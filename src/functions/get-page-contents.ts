@@ -4,18 +4,18 @@ import puppeteer from "puppeteer";
 
 export type BrowserAction = ClickAction | InputAction | NavigateAction;
 
-type ClickAction = {
+export type ClickAction = {
   action: "click";
   selector: string;
 };
 
-type InputAction = {
+export type InputAction = {
   action: "input";
   selector: string;
   text: string;
 };
 
-type NavigateAction = {
+export type NavigateAction = {
   action: "navigate";
   url: string;
 };

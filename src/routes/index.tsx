@@ -98,16 +98,11 @@ export default component$(() => {
         </form>
       </div>
       <div class="w-full">
-        <Actions key={actionsKey.value} class="mb-6" />
+        <Actions class="mb-6" />
         {output.value && (
           <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
             <h3 class="text-lg leading-6 font-medium text-gray-900">Output</h3>
-            <RenderResult
-              response={output.value}
-              whenAddActions$={() => {
-                actionsKey.value++;
-              }}
-            />
+            <RenderResult response={output.value} />
           </div>
         )}
         {loading.value && <Loading />}
