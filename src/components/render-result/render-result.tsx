@@ -1,6 +1,8 @@
 import type { PropFunction } from "@builder.io/qwik";
-import { Fragment, component$ } from "@builder.io/qwik";
-import { Question } from "../question/question";
+import { component$ } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
+import { PrismaClient } from "@prisma/client";
+import type { BrowserAction } from "~/functions/get-page-contents";
 
 interface TextBlock {
   type: "text";
@@ -15,7 +17,7 @@ interface QuestionBlock {
 
 type Block = TextBlock | QuestionBlock;
 
-function parseTextToBlocks(text: string): Block[] {
+export function parseTextToBlocks(text: string): Block[] {
   const blocks: Block[] = [];
 
   for (const line of text.split("\n")) {
@@ -37,26 +39,71 @@ function parseTextToBlocks(text: string): Block[] {
   return blocks;
 }
 
+export type ResponseBlock = {
+  thought?: string;
+  actions: BrowserAction[];
+};
+
+function parseTextToResponse(text: string) {
+  try {
+    return JSON.parse(text) as ResponseBlock;
+  } catch (err) {
+    // That's ok
+  }
+}
+
+const RenderResponse = component$(
+  (props: {
+    response: ResponseBlock;
+    whenAddActions$: PropFunction<(actions: BrowserAction[]) => void>;
+  }) => {
+    return (
+      <>
+        {props.response.thought && <p>{props.response.thought}</p>}
+        <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
+          {JSON.stringify(props.response.actions, null, 2)}
+        </pre>
+        <button
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          onClick$={async () => {
+            await server$(async () => {
+              const prisma = new PrismaClient();
+              await prisma.actions.createMany({
+                data: props.response.actions.map((action) => ({
+                  data: action,
+                  workflow_id: "1",
+                })),
+              });
+            })();
+            props.whenAddActions$?.(props.response.actions);
+          }}
+        >
+          Approve Actions
+        </button>
+      </>
+    );
+  }
+);
+
 export const RenderResult = component$(
-  (props: { response: string; onUpdate: PropFunction<() => void> }) => {
-    const blocks = parseTextToBlocks(props.response);
+  (props: {
+    response: string;
+    whenAddActions$: PropFunction<(actions: BrowserAction[]) => void>;
+  }) => {
+    const response = parseTextToResponse(props.response);
 
     return (
       <>
-        {blocks.map((block) => {
-          if (block.type === "text") {
-            return <Fragment key={block.text}>{block.text}</Fragment>;
-          } else if (block.type === "question") {
-            return (
-              <Question
-                onUpdate={props.onUpdate}
-                key={block.question}
-                isPartial={block.isPartial}
-                question={block.question}
-              />
-            );
-          }
-        })}
+        {response ? (
+          <RenderResponse
+            whenAddActions$={props.whenAddActions$}
+            response={response}
+          />
+        ) : (
+          <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
+            {props.response}
+          </pre>
+        )}
       </>
     );
   }

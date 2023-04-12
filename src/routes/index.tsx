@@ -1,4 +1,11 @@
-import { $, useTask$, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  $,
+  Signal,
+  createContextId,
+  useContextProvider,
+  useTask$,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import { component$, useSignal } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { streamCompletion } from "../functions/stream-completion";
@@ -19,6 +26,10 @@ function autogrow(el: HTMLTextAreaElement) {
 
 const useActions = false;
 
+export const ActionsContext = createContextId<Signal<number>>(
+  "index.actionsContext"
+);
+
 function getDefaultPrompt() {
   return useActions ? getActionsPrompt() : getBrowsePrompt();
 }
@@ -27,7 +38,10 @@ export default component$(() => {
   const prompt = useSignal("");
   const output = useSignal("");
   const loading = useSignal(false);
+  const actionsKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
+
+  useContextProvider(ActionsContext, actionsKey);
 
   useTask$(async () => {
     prompt.value = await getDefaultPrompt();
@@ -84,19 +98,16 @@ export default component$(() => {
         </form>
       </div>
       <div class="w-full">
-        <Actions class="mb-6" />
+        <Actions key={actionsKey.value} class="mb-6" />
         {output.value && (
           <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
-            <h2 class="text-2xl font-bold text-center">Output</h2>
-            <div class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
-              <RenderResult
-                response={output.value}
-                onUpdate={$(async () => {
-                  prompt.value = await getDefaultPrompt();
-                  update();
-                })}
-              />
-            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Output</h3>
+            <RenderResult
+              response={output.value}
+              whenAddActions$={() => {
+                actionsKey.value++;
+              }}
+            />
           </div>
         )}
         {loading.value && <Loading />}

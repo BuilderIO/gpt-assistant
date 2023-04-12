@@ -55,15 +55,19 @@ The prompt is: ${await getPrompt()}
 ${actions}
 
 What will the next actions you will take be, from the actions provided above? Using the functions above, give me a list of actions to take next, as a JSON array like:
-[{"action":"navigate","url":"https://www.google.com"}${
+{"actions":[{"action":"navigate","url":"https://www.a-website.com"}${
     useOnlyOneAction
       ? ""
       : `
 {"action":"input","text":"A search"},
 {"action":"click","selector":"#some-button"}`
-  }]
+  }]${includeThought ? `,"thought":"I need to do a thing"` : ""}}
 
-Following that, print a "thought", that describes what you need to do and why you are taking those actions, on a new line.
+${
+  includeThought
+    ? `For the thought field, print a "thought", that describes what you need to do and why you are taking those actions, on a new line.`
+    : ""
+}
 
 ${useOnlyOneAction ? `Please only output one next action` : ""}
 

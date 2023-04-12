@@ -101,20 +101,36 @@ export const Actions = component$((props: { class?: string }) => {
           Add action
         </button>
       </Form>
-      <button
-        class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick$={async () => {
-          loading.value = true;
-          await server$(async () => {
-            const prisma = new PrismaClient();
-            await prisma.actions.deleteMany();
-          })();
-          updateActions();
-          loading.value = false;
-        }}
-      >
-        Clear Actions
-      </button>
+      <div class="flex gap-3">
+        <button
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          onClick$={async () => {
+            loading.value = true;
+            await server$(async () => {
+              const prisma = new PrismaClient();
+              await prisma.actions.deleteMany();
+            })();
+            updateActions();
+            loading.value = false;
+          }}
+        >
+          Run Actions
+        </button>
+        <button
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+          onClick$={async () => {
+            loading.value = true;
+            await server$(async () => {
+              const prisma = new PrismaClient();
+              await prisma.actions.deleteMany();
+            })();
+            updateActions();
+            loading.value = false;
+          }}
+        >
+          Clear Actions
+        </button>
+      </div>
     </Card>
   );
 });
