@@ -71,16 +71,20 @@ The prompt is: ${await getPrompt()}
 
 ${actions}
 
-What will the next actions you will take be, from the actions provided above? Using the functions above, give me a list of actions to take next, as a JSON array like:
-${
-  includeThought ? '"actions":' : ""
-}[{"action":"navigate","url":"https://www.a-website.com"}${
+What will the next action${
+    useOnlyOneAction ? "" : "s"
+  } you will take be, from the actions provided above? Using the functions above, give me a ${
+    useOnlyOneAction ? "single action" : "list of actions"
+  } to take next, like:
+${includeThought ? '{"actions":' : ""}${
+    useOnlyOneAction ? "" : "["
+  }{"action":"navigate","url":"https://www.a-website.com"}${
     useOnlyOneAction
       ? ""
       : `
 {"action":"input","text":"A search"},
-{"action":"click","selector":"#some-button"}`
-  }]${includeThought ? `,"thought":"I need to do a thing"}` : ""}
+{"action":"click","selector":"#some-button"}]`
+  }${includeThought ? `,"thought":"I need to do a thing"}` : ""}
 
 ${
   includeThought

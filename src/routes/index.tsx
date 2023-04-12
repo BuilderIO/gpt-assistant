@@ -48,7 +48,8 @@ export default component$(() => {
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
 
-  useTask$(async () => {
+  useTask$(async ({ track }) => {
+    track(() => browserStateKey.value++);
     prompt.value = await getDefaultPrompt();
   });
 

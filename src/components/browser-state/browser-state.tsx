@@ -15,7 +15,7 @@ export const BrowserState = component$(() => {
   const loading = useSignal(false);
 
   useTask$(async ({ track }) => {
-    track(() => browserStateContext.value++);
+    track(() => browserStateContext.value);
     loading.value = true;
     browserState.value = await getBrowserState();
     loading.value = false;
@@ -29,10 +29,12 @@ export const BrowserState = component$(() => {
           <h3 class="text-lg leading-6 font-medium text-gray-900">
             Browser State
           </h3>
-          <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm">{browserState.value.url}</pre>
+          <pre class="text-sm text-gray-500 w-full overflow-auto">
+            {browserState.value.url}
+          </pre>
           {browserState.value.html && (
             <>
-              <pre class="text-sm text-gray-500 w-full overflow-auto">
+              <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm">
                 {browserState.value.html}
               </pre>
             </>

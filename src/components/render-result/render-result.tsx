@@ -57,9 +57,16 @@ function parseTextToResponse(text: string) {
         actions: result as any,
       } satisfies ResponseBlock;
     }
+    // Sometimes we get a single actions object
+    if (!result.actions) {
+      return {
+        thought: "",
+        actions: [result as any],
+      };
+    }
     return result;
   } catch (err) {
-    // That's ok
+    // That's ok, the text is likely not done streaming yet
   }
 }
 
