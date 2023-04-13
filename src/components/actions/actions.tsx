@@ -56,8 +56,9 @@ export const useCreateTaskAction = globalAction$(async ({ action }) => {
 }, zod$({ action: z.string() }));
 
 const showAddAction = false;
+const PERSIST = true;
 
-export async function runAndSave(actions: BrowserAction[]) {
+export async function runAndSave(actions: BrowserAction[], persist = PERSIST) {
   const url = (
     actions.find((action) => action.action === "navigate") as NavigateAction
   ).url;
@@ -69,6 +70,7 @@ export async function runAndSave(actions: BrowserAction[]) {
     },
     body: JSON.stringify({
       actions: actions,
+      persist,
       url,
     }),
   }).then((res) => res.json());

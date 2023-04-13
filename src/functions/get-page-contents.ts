@@ -1,5 +1,5 @@
 import { server$ } from "@builder.io/qwik-city";
-import type { Page } from "puppeteer";
+import type { Page, Browser } from "puppeteer";
 import puppeteer from "puppeteer";
 
 export type BrowserAction = ClickAction | InputAction | NavigateAction;
@@ -24,9 +24,9 @@ const headless = false;
 
 async function getMinimalPageHtml(page: Page) {
   return await page.evaluate(() => {
-    const main =
+    let main =
       document.querySelector("main") || document.querySelector("body")!;
-    // main = main.cloneNode(true) as HTMLElement;
+    main = main.cloneNode(true) as HTMLElement;
 
     main.querySelectorAll("script").forEach((el) => el.remove());
     main.querySelectorAll("style").forEach((el) => el.remove());
@@ -129,34 +129,65 @@ const debugBrowser =
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+let persistedBrowser: Browser | undefined;
+let persistedPage: Page | undefined;
+
 export const getPageContents = server$(
-  async (url: string, prevActions: BrowserAction[] = [], maxLength = 18000) => {
-    const browser = await puppeteer.launch({ headless });
-    let page = await browser.newPage();
-    browser.on("targetcreated", async () => {
-      page = (await browser.pages()).at(-1)!;
+  async (
+    url: string,
+    allActions: BrowserAction[] = [],
+    persist = false,
+    maxLength = 18000
+  ) => {
+    const hasExistingBrowser = !!persistedBrowser;
+
+    console.log({
+      persist,
+      hasExistingBrowser,
+      hasExistingPage: !!persistedPage,
     });
 
-    if (debugBrowser) {
-      page.on("console", (message) =>
-        console.log(
-          `${message.type().substring(0, 3).toUpperCase()} ${message.text()}`
-        )
+    const browser =
+      persist && persistedBrowser
+        ? persistedBrowser
+        : await puppeteer.launch({ headless });
+    let page =
+      persist && persistedPage ? persistedPage : await browser.newPage();
+
+    const actions = persist ? allActions.slice(-1) : allActions;
+
+    if (!hasExistingBrowser) {
+      browser.on("targetcreated", async () => {
+        page = (await browser.pages()).at(-1)!;
+        persistedPage = page;
+      });
+
+      if (debugBrowser) {
+        page.on("console", (message) =>
+          console.log(
+            `${message.type().substring(0, 3).toUpperCase()} ${message.text()}`
+          )
+        );
+      }
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
       );
-    }
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
-    );
-    await page.setViewport({ width: 1080, height: 1024 });
+      await page.setViewport({ width: 1080, height: 1024 });
 
-    await page.goto(url, {
-      waitUntil: "networkidle2",
-    });
+      await page.goto(url, {
+        waitUntil: "networkidle2",
+      });
+
+      if (persist) {
+        persistedBrowser = browser;
+        persistedPage = page;
+      }
+    }
 
     if (debugBrowser) {
-      console.log("actions", prevActions);
+      console.log("actions", actions);
     }
-    for (const action of prevActions) {
+    for (const action of actions) {
       if (action.action === "navigate") {
         if (action.url === url) {
           continue;
@@ -188,7 +219,7 @@ export const getPageContents = server$(
 
     const { html, url: currentUrl } = await getMinimalPageHtml(page);
 
-    if (!debugBrowser) {
+    if (!persist && !debugBrowser) {
       await page.close();
       await browser.close();
     }

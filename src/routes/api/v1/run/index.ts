@@ -21,6 +21,7 @@ const schema = z.object({
     ])
   ),
   url: z.string(),
+  persist: z.boolean().optional(),
 });
 
 export const onPost = async (request: RequestEvent) => {
@@ -29,7 +30,7 @@ export const onPost = async (request: RequestEvent) => {
   if (values instanceof Error) {
     return request.json(401, { error: values.message });
   }
-  const { url, actions } = values;
-  const { html, url: newUrl } = await getPageContents(url, actions);
+  const { url, actions, persist } = values;
+  const { html, url: newUrl } = await getPageContents(url, actions, persist);
   return request.json(200, { html, url: newUrl });
 };
