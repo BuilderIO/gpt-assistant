@@ -1,6 +1,6 @@
-import { server$ } from "@builder.io/qwik-city";
-import type { Page, Browser } from "puppeteer";
-import puppeteer from "puppeteer";
+import { server$ } from '@builder.io/qwik-city';
+import type { Page, Browser } from 'puppeteer';
+import puppeteer from 'puppeteer';
 
 export type ActionStep =
   | ClickAction
@@ -10,28 +10,28 @@ export type ActionStep =
   | TerminateAction;
 
 export type ClickAction = {
-  action: "click";
+  action: 'click';
   selector: string;
 };
 
 export type AskAction = {
-  action: "ask";
-  question: "string";
+  action: 'ask';
+  question: 'string';
 };
 
 export type TerminateAction = {
-  action: "terminate";
-  reason: "string";
+  action: 'terminate';
+  reason: 'string';
 };
 
 export type InputAction = {
-  action: "input";
+  action: 'input';
   selector: string;
   text: string;
 };
 
 export type NavigateAction = {
-  action: "navigate";
+  action: 'navigate';
   url: string;
 };
 
@@ -40,11 +40,11 @@ const headless = false;
 function decodeEntities(encodedString: string) {
   const translateRe = /&(nbsp|amp|quot|lt|gt);/g;
   const translate: Record<string, string> = {
-    nbsp: " ",
-    amp: "&",
+    nbsp: ' ',
+    amp: '&',
     quot: '"',
-    lt: "<",
-    gt: ">",
+    lt: '<',
+    gt: '>',
   };
   return encodedString
     .replace(translateRe, function (match, entity) {
@@ -59,32 +59,31 @@ function decodeEntities(encodedString: string) {
 async function getMinimalPageHtml(page: Page) {
   return await page.evaluate(() => {
     let main =
-      document.querySelector("main") || document.querySelector("body")!;
+      document.querySelector('main') || document.querySelector('body')!;
     main = main.cloneNode(true) as HTMLElement;
 
     const selectorsToDelete = [
-      "script",
-      "style",
-      "link",
-      "meta",
-      "header",
-      "title",
-      "noscript",
-      "iframe",
-      "img",
-      "svg",
-      "video",
-      "audio",
-      "canvas",
-      "object",
-      "[aria-hidden=true]",
+      'script',
+      'style',
+      'link',
+      'meta',
+      'title',
+      'noscript',
+      'iframe',
+      'img',
+      'svg',
+      'video',
+      'audio',
+      'canvas',
+      'object',
+      '[aria-hidden=true]',
     ];
 
     for (const element of selectorsToDelete) {
       main.querySelectorAll(element).forEach((el) => el.remove());
     }
 
-    for (const attr of ["class", "target", "rel", "ping", "style"]) {
+    for (const attr of ['class', 'target', 'rel', 'ping', 'style']) {
       [main as Element]
         .concat(Array.from(main.querySelectorAll(`[${attr}]`)))
         .forEach((el) => el.removeAttribute(attr));
@@ -114,15 +113,15 @@ async function getMinimalPageHtml(page: Page) {
       return parsedUrl.href;
     }
 
-    main.querySelectorAll("*").forEach((el) => {
+    main.querySelectorAll('*').forEach((el) => {
       if (el instanceof HTMLAnchorElement) {
         // Only keep the first two query params, to avoid pulling in high entropy
         // tracking params that eat up lots of tokens that are usually later in the URL
-        const href = el.getAttribute("href");
+        const href = el.getAttribute('href');
         if (href) {
           const numParams = href.match(/&/g)?.length;
-          if (typeof numParams === "number" && numParams > 1) {
-            el.setAttribute("href", removeNthQueryParams(href, 2));
+          if (typeof numParams === 'number' && numParams > 1) {
+            el.setAttribute('href', removeNthQueryParams(href, 2));
           }
         }
       }
@@ -136,40 +135,40 @@ async function getMinimalPageHtml(page: Page) {
 
       Array.from(el.attributes).forEach((attr) => {
         // Google adds a bunch of js* attrs
-        if (attr.name.startsWith("js")) {
+        if (attr.name.startsWith('js')) {
           el.removeAttribute(attr.name);
         }
       });
 
       // Unwrap empty divs and spans
-      if (["div", "span"].includes(el.tagName.toLowerCase())) {
+      if (['div', 'span'].includes(el.tagName.toLowerCase())) {
         // Check has no attributes
         if (!el.attributes.length) {
-          el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
+          el.replaceWith(...[document.createTextNode(' '), ...el.childNodes]);
         }
       }
     });
 
     // Add all values to the HTML directly
-    main.querySelectorAll("input,textarea,select").forEach((_el) => {
+    main.querySelectorAll('input,textarea,select').forEach((_el) => {
       const el = _el as
         | HTMLInputElement
         | HTMLTextAreaElement
         | HTMLSelectElement;
       if (el.value) {
-        el.setAttribute("value", el.value);
+        el.setAttribute('value', el.value);
       }
     });
 
     return {
-      html: main.innerHTML.replace(/\s+/g, " ").trim(),
+      html: main.innerHTML.replace(/\s+/g, ' ').trim(),
       url: location.href,
     };
   });
 }
 
 const debugBrowser =
-  process.env.DEBUG === "true" || process.env.DEBUG_BROWSER === "true";
+  process.env.DEBUG === 'true' || process.env.DEBUG_BROWSER === 'true';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -177,7 +176,7 @@ let persistedBrowser: Browser | undefined;
 let persistedPage: Page | undefined;
 
 function modifySelector(selector: string) {
-  return decodeEntities(selector).replace("href=", "href^=");
+  return decodeEntities(selector).replace('href=', 'href^=');
 }
 
 export const getPageContents = server$(
@@ -208,25 +207,25 @@ export const getPageContents = server$(
     const actions = persist ? allActions.slice(-1) : allActions;
 
     if (!hasExistingBrowser) {
-      browser.on("targetcreated", async () => {
+      browser.on('targetcreated', async () => {
         page = (await browser.pages()).at(-1)!;
         persistedPage = page;
       });
 
       if (debugBrowser) {
-        page.on("console", (message) =>
+        page.on('console', (message) =>
           console.log(
             `${message.type().substring(0, 3).toUpperCase()} ${message.text()}`
           )
         );
       }
       await page.setUserAgent(
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
       );
       await page.setViewport({ width: 1080, height: 1024 });
 
       await page.goto(url, {
-        waitUntil: "networkidle2",
+        waitUntil: 'networkidle2',
       });
 
       if (persist) {
@@ -236,32 +235,32 @@ export const getPageContents = server$(
     }
 
     if (debugBrowser) {
-      console.log("actions", actions);
+      console.log('actions', actions);
     }
     for (const action of actions) {
-      if (action.action === "navigate") {
+      if (action.action === 'navigate') {
         if (action.url === url) {
           continue;
         }
         await page.goto(decodeEntities(action.url), {
-          waitUntil: "networkidle2",
+          waitUntil: 'networkidle2',
         });
-      } else if (action.action === "click") {
+      } else if (action.action === 'click') {
         const selector = modifySelector(action.selector);
         await page.click(selector).catch(async (err) => {
-          console.warn("error clicking", err);
+          console.warn('error clicking', err);
           // Fall back to programmatic click, e.g. for a hidden element
           await page.evaluate((selector) => {
             const el = document.querySelector(selector) as HTMLElement;
             el?.click();
           }, selector);
         });
-      } else if (action.action === "input") {
+      } else if (action.action === 'input') {
         await page
           .type(modifySelector(action.selector), action.text)
           .catch((err) => {
             // Ok to continue, often means selector not valid
-            console.warn("error typing", err);
+            console.warn('error typing', err);
           });
       }
       await delay(500);

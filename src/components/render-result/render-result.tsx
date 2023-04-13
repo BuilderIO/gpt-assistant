@@ -4,28 +4,28 @@ import {
   useContext,
   useSignal,
   useTask$,
-} from "@builder.io/qwik";
-import { server$ } from "@builder.io/qwik-city";
-import { PrismaClient } from "@prisma/client";
-import type { ActionStep } from "~/functions/get-page-contents";
+} from '@builder.io/qwik';
+import { server$ } from '@builder.io/qwik-city';
+import { PrismaClient } from '@prisma/client';
+import type { ActionStep } from '~/functions/get-page-contents';
 import {
   ActionsContext,
   BrowserStateContext,
   GetCompletionContext,
   ContinueRunning,
-} from "~/routes";
-import { Loading } from "../loading/loading";
-import { getActions, runAndSave } from "../actions/actions";
-import { getBrowserState } from "~/prompts/browse";
-import { Question } from "../question/question";
+} from '~/routes';
+import { Loading } from '../loading/loading';
+import { getActions, runAndSave } from '../actions/actions';
+import { getBrowserState } from '~/prompts/browse';
+import { Question } from '../question/question';
 
 interface TextBlock {
-  type: "text";
+  type: 'text';
   text: string;
 }
 
 interface QuestionBlock {
-  type: "question";
+  type: 'question';
   question: string;
   isPartial?: boolean;
 }
@@ -35,17 +35,17 @@ type Block = TextBlock | QuestionBlock;
 export function parseTextToBlocks(text: string): Block[] {
   const blocks: Block[] = [];
 
-  for (const line of text.split("\n")) {
+  for (const line of text.split('\n')) {
     const useLine = line.trim();
-    if (line.startsWith("ask(")) {
+    if (line.startsWith('ask(')) {
       blocks.push({
-        type: "question",
+        type: 'question',
         question: useLine.trim().slice(5, -2),
-        isPartial: !useLine.endsWith(")"),
+        isPartial: !useLine.endsWith(')'),
       });
     } else {
       blocks.push({
-        type: "text",
+        type: 'text',
         text: line,
       });
     }
@@ -65,14 +65,14 @@ export function parseTextToResponse(text: string): ResponseBlock | undefined {
     // Sometime an array is returned
     if (Array.isArray(result)) {
       return {
-        thought: "",
+        thought: '',
         actions: result as any,
       } satisfies ResponseBlock;
     }
     // Sometimes we get a single actions object
     if (!result.actions) {
       return {
-        thought: "",
+        thought: '',
         actions: [result as any],
       } satisfies ResponseBlock;
     }
@@ -87,7 +87,7 @@ const insertActions = server$(async (actions: ActionStep[]) => {
   await prisma.actions.createMany({
     data: actions.map((action) => ({
       data: action,
-      workflow_id: "1",
+      workflow_id: '1',
     })),
   });
 });
@@ -100,7 +100,7 @@ export const RenderResult = component$((props: { response: string }) => {
   const getCompletionContext = useContext(GetCompletionContext);
   const continueContext = useContext(ContinueRunning);
   const continueTimes = useSignal(100);
-  const answer = useSignal("");
+  const answer = useSignal('');
 
   const loading = useSignal(false);
   const approved = useSignal(false);
@@ -109,13 +109,13 @@ export const RenderResult = component$((props: { response: string }) => {
 
   useTask$(({ track }) => {
     track(() => props.response);
-    if (response?.actions?.[0]?.action === "terminate") {
+    if (response?.actions?.[0]?.action === 'terminate') {
       continueContext.value = false;
     }
   });
 
   const waitForAnswerIfNeeded = $(async () => {
-    if (action?.action !== "ask") {
+    if (action?.action !== 'ask') {
       return;
     }
     return new Promise((resolve) => {
@@ -124,7 +124,7 @@ export const RenderResult = component$((props: { response: string }) => {
         if (answer.value) {
           resolve(answer.value);
         }
-        answer.value = "";
+        answer.value = '';
       }, 200);
     });
   });
@@ -138,7 +138,7 @@ export const RenderResult = component$((props: { response: string }) => {
       <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
         <h3 class="text-lg leading-6 font-medium text-gray-900">Output</h3>
         {response ? (
-          action?.action === "ask" ? (
+          action?.action === 'ask' ? (
             <Question
               onUpdate$={(reply) => {
                 answer.value = reply;
@@ -157,7 +157,7 @@ export const RenderResult = component$((props: { response: string }) => {
                 <div
                   class="flex gap-4"
                   style={{
-                    visibility: continueContext.value ? "hidden" : "visible",
+                    visibility: continueContext.value ? 'hidden' : 'visible',
                   }}
                 >
                   <button
@@ -217,7 +217,7 @@ export const RenderResult = component$((props: { response: string }) => {
                     onInput$={(_e, el) => {
                       continueTimes.value = el.valueAsNumber;
                     }}
-                  />{" "}
+                  />{' '}
                   <div class="self-center ml-[-10px]">times</div>
                   <button
                     class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"

@@ -1,8 +1,8 @@
-import type { PropFunction } from "@builder.io/qwik";
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { streamCompletion } from "~/functions/stream-completion";
-import { Loading } from "../loading/loading";
-import { addQuestion } from "~/functions/questions";
+import type { PropFunction } from '@builder.io/qwik';
+import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik';
+import { streamCompletion } from '~/functions/stream-completion';
+import { Loading } from '../loading/loading';
+import { addQuestion } from '~/functions/questions';
 
 function getFullPrompt(question: string) {
   return `
@@ -26,7 +26,7 @@ export const Question = component$(
     isPartial?: boolean;
     onUpdate$: PropFunction<(answer: string) => void>;
   }) => {
-    const answer = useSignal("");
+    const answer = useSignal('');
     const loading = useSignal(false);
 
     // TODO: checkbox to turn this off or until just a suggestion

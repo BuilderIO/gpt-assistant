@@ -1,26 +1,25 @@
-
 export async function streamCompletion(
   prompt: string,
   onData: (value: string) => void
 ) {
-  const res = await fetch("/api/v1/ai", {
-    method: "POST",
+  const res = await fetch('/api/v1/ai', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       model: 'gpt-4',
       prompt: [
         {
           content: prompt,
-          role: "user",
+          role: 'user',
         },
       ],
     }),
   });
 
   const reader = res.body!.getReader();
-  const decoder = new TextDecoder("utf-8");
+  const decoder = new TextDecoder('utf-8');
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -31,19 +30,19 @@ export async function streamCompletion(
 
     const text = decoder.decode(value, { stream: true });
     const strings = text
-      .split("\n\n")
+      .split('\n\n')
       .map((str) => str.trim())
       .filter(Boolean);
-    let newString = "";
+    let newString = '';
     for (const string of strings) {
-      const prefix = "data: ";
+      const prefix = 'data: ';
       if (string.startsWith(prefix)) {
         const json = string.slice(prefix.length);
-        if (json === "[DONE]") {
+        if (json === '[DONE]') {
           break;
         }
         const content = JSON.parse(json);
-        newString += content.choices[0].delta.content ?? "";
+        newString += content.choices[0].delta.content ?? '';
       }
     }
     onData(newString);

@@ -4,13 +4,13 @@ import {
   useContext,
   useSignal,
   useTask$,
-} from "@builder.io/qwik";
-import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
-import { PrismaClient } from "@prisma/client";
-import { Loading } from "../loading/loading";
-import type { ActionStep, NavigateAction } from "~/functions/get-page-contents";
-import { Card } from "../card/card";
-import { ActionsContext, BrowserStateContext, ContinueRunning } from "~/routes";
+} from '@builder.io/qwik';
+import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
+import { PrismaClient } from '@prisma/client';
+import { Loading } from '../loading/loading';
+import type { ActionStep, NavigateAction } from '~/functions/get-page-contents';
+import { Card } from '../card/card';
+import { ActionsContext, BrowserStateContext, ContinueRunning } from '~/routes';
 
 export type ActionWithId = {
   id: string;
@@ -57,13 +57,13 @@ const PERSIST = true;
 
 export async function runAndSave(actions: ActionStep[], persist = PERSIST) {
   const url = (
-    actions.find((action) => action.action === "navigate") as NavigateAction
+    actions.find((action) => action.action === 'navigate') as NavigateAction
   ).url;
 
-  const { html, url: newUrl } = await fetch("/api/v1/run", {
-    method: "POST",
+  const { html, url: newUrl } = await fetch('/api/v1/run', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       actions: actions,
@@ -81,7 +81,7 @@ export const Actions = component$((props: { class?: string }) => {
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
   const continueRunningContext = useContext(ContinueRunning);
-  const error = useSignal("");
+  const error = useSignal('');
 
   const updateActions = $(async () => {
     loading.value = true;
@@ -185,7 +185,7 @@ export const Actions = component$((props: { class?: string }) => {
               id="run-actions"
               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
               onClick$={async () => {
-                error.value = "";
+                error.value = '';
                 loading.value = true;
                 try {
                   await runAndSave(

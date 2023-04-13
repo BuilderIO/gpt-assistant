@@ -1,5 +1,5 @@
-import type { RequestEvent } from "@builder.io/qwik-city";
-import { z } from "@builder.io/qwik-city";
+import type { RequestEvent } from '@builder.io/qwik-city';
+import { z } from '@builder.io/qwik-city';
 
 const schema = z.object({
   prompt: z.string(),

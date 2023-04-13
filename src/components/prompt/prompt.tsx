@@ -5,17 +5,17 @@ import {
   useSignal,
   useTask$,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import { Card } from "../card/card";
-import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
-import { PrismaClient } from "@prisma/client";
-import { Loading } from "../loading/loading";
+} from '@builder.io/qwik';
+import { Card } from '../card/card';
+import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
+import { PrismaClient } from '@prisma/client';
+import { Loading } from '../loading/loading';
 import {
   ActionsContext,
   BrowserStateContext,
   GetCompletionContext,
   ContinueRunning,
-} from "~/routes";
+} from '~/routes';
 
 export const useUpdatePrompt = globalAction$(
   async ({ prompt }) => {
@@ -34,7 +34,7 @@ export const useUpdatePrompt = globalAction$(
 export const Prompt = component$((props: { class?: string }) => {
   const updatePromptAction = useUpdatePrompt();
   const loading = useSignal(false);
-  const prompt = useSignal("");
+  const prompt = useSignal('');
 
   const runCompletion = useContext(GetCompletionContext);
   const actionsContext = useContext(ActionsContext);
@@ -63,19 +63,19 @@ export const Prompt = component$((props: { class?: string }) => {
     }
     await runCompletion();
     // HACK: refactor
-    (document.querySelector("#continue-button") as HTMLElement).click();
+    (document.querySelector('#continue-button') as HTMLElement).click();
   });
 
   useVisibleTask$(() => {
     setTimeout(async () => {
       const url = new URL(location.href);
-      const runParam = url.searchParams.get("run");
+      const runParam = url.searchParams.get('run');
       if (runParam) {
         prompt.value = runParam;
 
         setTimeout(async () => {
-          url.searchParams.delete("run");
-          history.replaceState({}, "", url.toString());
+          url.searchParams.delete('run');
+          history.replaceState({}, '', url.toString());
           await run();
         }, 10);
       }
@@ -95,7 +95,7 @@ export const Prompt = component$((props: { class?: string }) => {
         <textarea
           onKeyPress$={(e) => {
             if (
-              e.key === "Enter" &&
+              e.key === 'Enter' &&
               !(e.metaKey || e.shiftKey || e.ctrlKey || e.altKey)
             ) {
               run();

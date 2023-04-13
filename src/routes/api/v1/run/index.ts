@@ -1,21 +1,21 @@
-import type { RequestEvent } from "@builder.io/qwik-city";
-import { z } from "@builder.io/qwik-city";
-import { attempt } from "../ai";
-import { getPageContents } from "~/functions/get-page-contents";
+import type { RequestEvent } from '@builder.io/qwik-city';
+import { z } from '@builder.io/qwik-city';
+import { attempt } from '../ai';
+import { getPageContents } from '~/functions/get-page-contents';
 const schema = z.object({
   actions: z.array(
     z.union([
       z.object({
-        action: z.literal("click"),
+        action: z.literal('click'),
         selector: z.string(),
       }),
       z.object({
-        action: z.literal("input"),
+        action: z.literal('input'),
         selector: z.string(),
         text: z.string(),
       }),
       z.object({
-        action: z.literal("navigate"),
+        action: z.literal('navigate'),
         url: z.string(),
       }),
     ])

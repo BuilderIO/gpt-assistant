@@ -1,7 +1,7 @@
-import { server$ } from "@builder.io/qwik-city";
-import { PrismaClient } from "@prisma/client";
+import { server$ } from '@builder.io/qwik-city';
+import { PrismaClient } from '@prisma/client';
 
-const workflowId = "test";
+const workflowId = 'test';
 
 export const addQuestion = server$(
   async (question: string, answer: string, workflow = workflowId) => {

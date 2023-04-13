@@ -1,7 +1,7 @@
-import { server$ } from "@builder.io/qwik-city";
-import { PrismaClient } from "@prisma/client";
-import { getActionsWithoutId } from "~/components/actions/actions";
-import type { BrowserStateSafeType } from "~/components/browser-state/browser-state";
+import { server$ } from '@builder.io/qwik-city';
+import { PrismaClient } from '@prisma/client';
+import { getActionsWithoutId } from '~/components/actions/actions';
+import type { BrowserStateSafeType } from '~/components/browser-state/browser-state';
 
 const getPreviousSteps = async () =>
   `
@@ -55,7 +55,7 @@ Which has this current HTML content:
 ${browserState.html}
     `.trim();
   }
-  return "";
+  return '';
 };
 
 export const getPrompt = server$(async () => {
@@ -72,7 +72,7 @@ The actions you can take:
 - click something, like: {"action":"click","selector":"#some-button"}
 - input something, like: {"action":"input","selector":"#some-input","text":"some text"}${
   !includeAsk
-    ? ""
+    ? ''
     : `
 - ask a question to the user to get information you require that was not yet provided, like: {"action":"ask","question":"What is your name?"}`
 }
@@ -98,7 +98,7 @@ async function priorAnswers() {
   const answers = await getAnswers();
 
   if (!answers.length) {
-    return "";
+    return '';
   }
   return `
 The answers to previous questions you asked are:
@@ -124,35 +124,35 @@ ${
 The previous actions you took were:
 ${previousSteps}
 `.trim()
-    : ""
+    : ''
 }
 
 ${await priorAnswers()}
 
 What will the next action${
-    useOnlyOneAction ? "" : "s"
+    useOnlyOneAction ? '' : 's'
   } you will take be, from the actions provided above? Using the functions above, give me a ${
-    useOnlyOneAction ? "single action" : "list of actions"
+    useOnlyOneAction ? 'single action' : 'list of actions'
   } to take next, like:
-${includeThought ? '{"actions":' : ""}${
-    useOnlyOneAction ? "" : "["
+${includeThought ? '{"actions":' : ''}${
+    useOnlyOneAction ? '' : '['
   }{"action":"navigate","url":"https://www.a-website.com"}${
     useOnlyOneAction
-      ? ""
+      ? ''
       : `
 {"action":"input","text":"A search"},
 {"action":"click","selector":"#some-button"}]`
-  }${includeThought ? `,"thought":"I need to do a thing"}` : ""}
+  }${includeThought ? `,"thought":"I need to do a thing"}` : ''}
 
 ${
   includeThought
     ? `For the thought field, print a "thought", that describes what you need to do and why you are taking those actions, on a new line.`
-    : ""
+    : ''
 }
 
-${useOnlyOneAction ? `Please only output one next action` : ""}
+${useOnlyOneAction ? `Please only output one next action` : ''}
 
 `
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }

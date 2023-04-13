@@ -1,14 +1,14 @@
-import type { RequestEvent } from "@builder.io/qwik-city";
-import { OpenAIApi, Configuration } from "openai";
-import type { ChatCompletionRequestMessage } from "openai";
-import type { AxiosError } from "axios";
-import type { IncomingMessage } from "http";
-import { z } from "zod";
+import type { RequestEvent } from '@builder.io/qwik-city';
+import { OpenAIApi, Configuration } from 'openai';
+import type { ChatCompletionRequestMessage } from 'openai';
+import type { AxiosError } from 'axios';
+import type { IncomingMessage } from 'http';
+import { z } from 'zod';
 
 const schema = z.object({
   prompt: z.array(
     z.object({
-      role: z.enum(["system", "user", "assistant"]),
+      role: z.enum(['system', 'user', 'assistant']),
       content: z.string(),
     })
   ),
@@ -40,10 +40,10 @@ export const onPost = async (request: RequestEvent) => {
 
   const response = await request.getWritableStream();
   const writer = response.getWriter();
-  stream.on("data", (chunk) => {
+  stream.on('data', (chunk) => {
     writer.write(chunk);
   });
-  stream.on("end", () => {
+  stream.on('end', () => {
     writer.close();
   });
 };
@@ -68,12 +68,12 @@ export async function generateCompletion({
   try {
     const completion = await openAi.createChatCompletion(
       {
-        model: model || "gpt-3.5-turbo",
+        model: model || 'gpt-3.5-turbo',
         messages: prompt,
         stream: true,
         n: number || 1,
       },
-      { responseType: "stream" }
+      { responseType: 'stream' }
     );
     return completion.data as unknown as IncomingMessage;
   } catch (err) {

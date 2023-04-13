@@ -1,4 +1,4 @@
-import type { QRL, Signal } from "@builder.io/qwik";
+import type { QRL, Signal } from '@builder.io/qwik';
 import {
   $,
   component$,
@@ -7,38 +7,38 @@ import {
   useSignal,
   useTask$,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
-import { Actions } from "~/components/actions/actions";
-import { BrowserState } from "~/components/browser-state/browser-state";
-import { Loading } from "~/components/loading/loading";
-import { Prompt } from "~/components/prompt/prompt";
-import { RenderResult } from "~/components/render-result/render-result";
-import { getBrowsePrompt } from "~/prompts/browse";
-import { streamCompletion } from "../functions/stream-completion";
+} from '@builder.io/qwik';
+import type { DocumentHead } from '@builder.io/qwik-city';
+import { Actions } from '~/components/actions/actions';
+import { BrowserState } from '~/components/browser-state/browser-state';
+import { Loading } from '~/components/loading/loading';
+import { Prompt } from '~/components/prompt/prompt';
+import { RenderResult } from '~/components/render-result/render-result';
+import { getBrowsePrompt } from '~/prompts/browse';
+import { streamCompletion } from '../functions/stream-completion';
 
 Error.stackTraceLimit = Infinity;
 
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
   setTimeout(() => {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
   });
 }
 
 export const ActionsContext = createContextId<Signal<number>>(
-  "index.actionsContext"
+  'index.actionsContext'
 );
 
 export const BrowserStateContext = createContextId<Signal<number>>(
-  "index.browserStateContext"
+  'index.browserStateContext'
 );
 export const GetCompletionContext = createContextId<QRL<() => Promise<string>>>(
-  "index.getCompletionContext"
+  'index.getCompletionContext'
 );
 export const ContinueRunning = createContextId<Signal<boolean>>(
-  "index.continueRunning"
+  'index.continueRunning'
 );
 
 function getDefaultPrompt() {
@@ -48,8 +48,8 @@ function getDefaultPrompt() {
 const showGptPrompt = true;
 
 export default component$(() => {
-  const prompt = useSignal("");
-  const output = useSignal("");
+  const prompt = useSignal('');
+  const output = useSignal('');
   const loading = useSignal(false);
   const hasBegun = useSignal(false);
   const actionsKey = useSignal(0);
@@ -58,14 +58,14 @@ export default component$(() => {
   const isRunningContinuously = useSignal(false);
 
   const update = $(async () => {
-    output.value = "";
+    output.value = '';
     loading.value = true;
     hasBegun.value = true;
     await streamCompletion(prompt.value, (value) => {
       output.value += value;
     });
     loading.value = false;
-    console.debug("Final value:", output.value);
+    console.debug('Final value:', output.value);
     return output.value;
   });
 
@@ -109,9 +109,9 @@ export default component$(() => {
             <textarea
               ref={promptTextarea}
               style={{
-                "box-sizing": "content-box",
-                "min-height": "100px",
-                "max-height": "50vh",
+                'box-sizing': 'content-box',
+                'min-height': '100px',
+                'max-height': '50vh',
               }}
               onFocus$={(e, el) => {
                 autogrow(el);
@@ -155,6 +155,6 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "AI Agent",
+  title: 'AI Agent',
   meta: [],
 };

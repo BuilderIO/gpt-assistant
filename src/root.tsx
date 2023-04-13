@@ -1,14 +1,14 @@
-import { component$ } from "@builder.io/qwik";
+import { component$ } from '@builder.io/qwik';
 import {
   QwikCityProvider,
   RouterOutlet,
   ServiceWorkerRegister,
-} from "@builder.io/qwik-city";
-import { RouterHead } from "./components/router-head/router-head";
-import { config } from "dotenv";
+} from '@builder.io/qwik-city';
+import { RouterHead } from './components/router-head/router-head';
+import { config } from 'dotenv';
 config();
 
-import "./global.css";
+import './global.css';
 
 export default component$(() => {
   /**
