@@ -77,6 +77,8 @@ The actions you can take:
 - ask a question to the user to get information you require that was not yet provided, like: {"action":"ask","question":"What is your name?"}`
 }
 - terminate the program, like: {"action":"terminate","reason":"The restaurant you wanted is not available"}
+
+When you provide a selector, be sure that that selector is actually on the current page you are on. It needs to be in the HTML you are provided or don't use it.
 `.trim();
 
 const useOnlyOneAction = true;

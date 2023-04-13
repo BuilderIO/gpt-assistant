@@ -108,7 +108,8 @@ export const RenderResult = component$((props: { response: string }) => {
   const action = response?.actions[0];
 
   useTask$(({ track }) => {
-    if (track(() => action?.action === "terminate")) {
+    track(() => props.response);
+    if (response?.actions?.[0]?.action === "terminate") {
       continueContext.value = false;
     }
   });
