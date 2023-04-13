@@ -150,7 +150,11 @@ export const getPageContents = server$(
     const browser =
       persist && persistedBrowser
         ? persistedBrowser
-        : await puppeteer.launch({ headless });
+        : await puppeteer.launch({
+            headless,
+            executablePath:
+              "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+          });
     let page =
       persist && persistedPage ? persistedPage : await browser.newPage();
 
@@ -207,10 +211,10 @@ export const getPageContents = server$(
       } else if (action.action === "input") {
         await page.type(action.selector, action.text);
       }
-      await delay(1000);
+      await delay(500);
       await page
         .waitForNetworkIdle({
-          timeout: 2000,
+          timeout: 1000,
         })
         .catch(() => {
           // Errors are thrown on timeout, but we don't care about that

@@ -43,6 +43,8 @@ function getDefaultPrompt() {
   return getBrowsePrompt();
 }
 
+const showGptPrompt = false;
+
 export default component$(() => {
   const prompt = useSignal("");
   const output = useSignal("");
@@ -87,38 +89,40 @@ export default component$(() => {
     <div class="grid grid-cols-3 gap-10 p-10 max-w-[1900px] mx-auto">
       <div class="w-full flex flex-col gap-6">
         <Prompt />
-        <form
-          class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
-          preventdefault:submit
-          onSubmit$={async () => {
-            update();
-          }}
-        >
-          <h3 class="text-lg leading-6 font-medium text-gray-900">
-            GPT Prompt
-          </h3>
-          <textarea
-            ref={promptTextarea}
-            style={{
-              "box-sizing": "content-box",
-              "min-height": "100px",
-              "max-height": "50vh",
+        {showGptPrompt && (
+          <form
+            class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
+            preventdefault:submit
+            onSubmit$={async () => {
+              update();
             }}
-            onFocus$={(e, el) => {
-              autogrow(el);
-            }}
-            onKeydown$={(e, el) => {
-              autogrow(el);
-            }}
-            class="block w-auto px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            bind:value={prompt}
-          />
-          <div class="flex flex-row gap-3">
-            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
-              Submit
-            </button>
-          </div>
-        </form>
+          >
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+              GPT Prompt
+            </h3>
+            <textarea
+              ref={promptTextarea}
+              style={{
+                "box-sizing": "content-box",
+                "min-height": "100px",
+                "max-height": "50vh",
+              }}
+              onFocus$={(e, el) => {
+                autogrow(el);
+              }}
+              onKeydown$={(e, el) => {
+                autogrow(el);
+              }}
+              class="block w-auto px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              bind:value={prompt}
+            />
+            <div class="flex flex-row gap-3">
+              <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+                Submit
+              </button>
+            </div>
+          </form>
+        )}
       </div>
       <div class="w-full flex flex-col gap-6">
         <BrowserState />

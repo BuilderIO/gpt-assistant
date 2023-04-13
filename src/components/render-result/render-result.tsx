@@ -94,7 +94,7 @@ export const RenderResult = component$((props: { response: string }) => {
   const browserStateContext = useContext(BrowserStateContext);
   const getCompletionContext = useContext(GetCompletionContext);
   const showBigStopButtonContext = useContext(ShowBigStopButton);
-  const continueTimes = useSignal(10);
+  const continueTimes = useSignal(100);
 
   const loading = useSignal(false);
   const approved = useSignal(false);

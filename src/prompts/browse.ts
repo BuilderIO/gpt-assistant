@@ -64,12 +64,18 @@ export const getPrompt = server$(async () => {
   return prompt?.text;
 });
 
+const includeAsk = false;
+
 const actions = `
 The actions you can take:
 - load a website, like: {"action":"navigate","url":"https://www.google.com"}
 - click something, like: {"action":"click","selector":"#some-button"}
-- input something, like: {"action":"input","selector":"#some-input","text":"some text"}
-- ask a question to the user to get information you require that was not yet provided, like: {"action":"ask","question":"What is your name?"}
+- input something, like: {"action":"input","selector":"#some-input","text":"some text"}${
+  !includeAsk
+    ? ""
+    : `
+- ask a question to the user to get information you require that was not yet provided, like: {"action":"ask","question":"What is your name?"}`
+}
 - terminate the program, like: {"action":"terminate","reason":"The restaurant you wanted is not available"}
 `.trim();
 

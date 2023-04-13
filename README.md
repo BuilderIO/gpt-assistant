@@ -1,3 +1,3 @@
-# AI Agent
+# GPT Assistant
 
 An experiment

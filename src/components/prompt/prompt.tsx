@@ -36,7 +36,7 @@ export const Prompt = component$((props: { class?: string }) => {
   const loading = useSignal(false);
   const prompt = useSignal("");
 
-  const completionContext = useContext(GetCompletionContext);
+  const runCompletion = useContext(GetCompletionContext);
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
   const showBigStopButton = useContext(ShowBigStopButton);
@@ -71,25 +71,29 @@ export const Prompt = component$((props: { class?: string }) => {
       prompt: prompt.value,
     });
     await clearActions();
-    await completionContext();
+    if (!prompt.value) {
+      return;
+    }
+    await runCompletion();
     (document.querySelector("#continue-button") as HTMLElement).click();
   });
 
   return (
     <Card class={props.class}>
-      <h3 class="text-lg leading-6 font-medium text-gray-900">User Prompt</h3>
+      <h3 class="text-lg leading-6 font-medium text-gray-900">GPT Assistant</h3>
       <Form action={updatePromptAction}>
         <textarea
-          onKeyUp$={(e) => {
+          onKeyPress$={(e) => {
             if (
               e.key === "Enter" &&
               !(e.metaKey || e.shiftKey || e.ctrlKey || e.altKey)
             ) {
               run();
-              // Next tick
-              // Promise.resolve().then(() => {
-              prompt.value = prompt.value.trim();
-              // });
+
+              // "Next tick"
+              setTimeout(() => {
+                prompt.value = prompt.value.trim();
+              });
             }
           }}
           placeholder="Your prompt"
