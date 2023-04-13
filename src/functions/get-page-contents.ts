@@ -20,10 +20,6 @@ export type NavigateAction = {
   url: string;
 };
 
-export function parseActions(str: string) {
-  return JSON.parse(str) as BrowserAction[];
-}
-
 const headless = false;
 
 async function getMinimalPageHtml(page: Page) {
@@ -53,7 +49,40 @@ async function getMinimalPageHtml(page: Page) {
         .forEach((el) => el.removeAttribute(attr));
     }
 
+    function removeNthQueryParams(url: string, n: number) {
+      // Parse the URL using the URL constructor
+      const parsedUrl = new URL(url, location.origin);
+
+      // Get the search parameters from the parsed URL
+      const searchParams = parsedUrl.searchParams;
+
+      // Convert the search parameters to an array of key-value pairs
+      const paramsArray = Array.from(searchParams.entries());
+
+      // Clear all existing search parameters
+      searchParams.forEach((value, key) => {
+        searchParams.delete(key);
+      });
+
+      // Add back only the first n query parameters
+      for (let i = 0; i < Math.min(n, paramsArray.length); i++) {
+        const [key, value] = paramsArray[i];
+        searchParams.append(key, value);
+      }
+
+      return parsedUrl.href;
+    }
+
     main.querySelectorAll("*").forEach((el) => {
+      if (el instanceof HTMLAnchorElement) {
+        // Only keep the first two query params, to avoid pulling in high entropy
+        // tracking params that eat up lots of tokens that are usually later in the URL
+        const numParams = el.href.match(/&/g)?.length;
+        if (typeof numParams === "number" && numParams > 1) {
+          el.href = removeNthQueryParams(el.href, 2);
+        }
+      }
+
       // Remove data-* attrs
       if (el instanceof HTMLElement) {
         Object.keys(el.dataset).forEach((dataKey) => {
@@ -101,7 +130,7 @@ const debugBrowser =
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getPageContents = server$(
-  async (url: string, prevActions: BrowserAction[] = [], maxLength = 20000) => {
+  async (url: string, prevActions: BrowserAction[] = [], maxLength = 18000) => {
     const browser = await puppeteer.launch({ headless });
     let page = await browser.newPage();
     browser.on("targetcreated", async () => {

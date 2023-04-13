@@ -1,11 +1,12 @@
 import { component$, useContext, useSignal } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
-import type { BrowserAction } from "~/functions/get-page-contents";
+import { BrowserAction, parseActions } from "~/functions/get-page-contents";
 import {
   ActionsContext,
   BrowserStateContext,
   GetCompletionContext,
+  ShowBigStopButton,
 } from "~/routes";
 import { Loading } from "../loading/loading";
 import { getActions, runAndSave } from "../actions/actions";
@@ -53,7 +54,7 @@ export type ResponseBlock = {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function parseTextToResponse(text: string) {
+export function parseTextToResponse(text: string) {
   try {
     const result = JSON.parse(text) as ResponseBlock;
     // Sometime an array is returned
@@ -92,6 +93,8 @@ export const RenderResult = component$((props: { response: string }) => {
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
   const getCompletionContext = useContext(GetCompletionContext);
+  const showBigStopButtonContext = useContext(ShowBigStopButton);
+  const continueTimes = useSignal(10);
 
   const loading = useSignal(false);
   const approved = useSignal(false);
@@ -107,7 +110,7 @@ export const RenderResult = component$((props: { response: string }) => {
         {response ? (
           <>
             {response.thought && <p>{response.thought}</p>}
-            <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
+            <pre class="whitespace-pre-wrap w-full p-2 bg-gray-100 border-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500 overflow-auto">
               {JSON.stringify(response.actions, null, 2)}
             </pre>
             {loading.value ? (
@@ -117,23 +120,56 @@ export const RenderResult = component$((props: { response: string }) => {
                 <button
                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
                   onClick$={async () => {
-                    loading.value = true;
+                    let actions = response.actions;
+                    const checkShouldStop = () => {
+                      if (showBigStopButtonContext.value === false) {
+                        throw new StopError();
+                      }
+                    };
+                    class StopError extends Error {}
                     try {
-                      await insertActions(response!.actions);
-                      actionsContext.value++;
-                      approved.value = true;
-                      await runAndSave(
-                        (await getActions()).map((action) => action.action)
-                      );
-                      browserStateContext.value++;
-                      await getCompletionContext();
+                      showBigStopButtonContext.value = true;
+                      for (let i = 0; i < continueTimes.value; i++) {
+                        loading.value = true;
+                        checkShouldStop();
+                        await getBrowserState();
+                        checkShouldStop();
+                        await insertActions(actions);
+                        checkShouldStop();
+                        actionsContext.value++;
+                        approved.value = true;
+                        await runAndSave(
+                          (await getActions()).map((action) => action.action)
+                        );
+                        checkShouldStop();
+                        browserStateContext.value++;
+                        const newValue = await getCompletionContext();
+                        checkShouldStop();
+                        actions = parseTextToResponse(newValue)!.actions;
+                      }
+                    } catch (err) {
+                      if (err instanceof StopError) {
+                        // Stopped
+                      } else {
+                        throw err;
+                      }
                     } finally {
+                      showBigStopButtonContext.value = false;
                       loading.value = false;
                     }
                   }}
                 >
                   Continue
                 </button>
+                <input
+                  type="number"
+                  class="w-[53px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow pr-0 ml-[-19px] rounded-l-none"
+                  value={continueTimes.value}
+                  onInput$={(_e, el) => {
+                    continueTimes.value = el.valueAsNumber;
+                  }}
+                />{" "}
+                <div class="self-center ml-[-10px]">times</div>
                 <button
                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
                   onClick$={async () => {

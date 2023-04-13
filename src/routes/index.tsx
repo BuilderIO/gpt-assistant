@@ -32,8 +32,11 @@ export const ActionsContext = createContextId<Signal<number>>(
 export const BrowserStateContext = createContextId<Signal<number>>(
   "index.browserStateContext"
 );
-export const GetCompletionContext = createContextId<QRL<() => Promise<void>>>(
+export const GetCompletionContext = createContextId<QRL<() => Promise<string>>>(
   "index.getCompletionContext"
+);
+export const ShowBigStopButton = createContextId<Signal<boolean>>(
+  "index.showBigStopButton"
 );
 
 function getDefaultPrompt() {
@@ -47,6 +50,7 @@ export default component$(() => {
   const actionsKey = useSignal(0);
   const browserStateKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
+  const showBigStopButton = useSignal(false);
 
   const update = $(async () => {
     output.value = "";
@@ -56,16 +60,18 @@ export default component$(() => {
     });
     loading.value = false;
     console.debug("Final value:", output.value);
+    return output.value;
   });
 
   const hardUpdate = $(async () => {
     prompt.value = await getDefaultPrompt();
-    await update();
+    return await update();
   });
 
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
   useContextProvider(GetCompletionContext, hardUpdate);
+  useContextProvider(ShowBigStopButton, showBigStopButton);
 
   useTask$(async ({ track }) => {
     track(() => browserStateKey.value);
@@ -119,6 +125,16 @@ export default component$(() => {
       <div class="w-full">
         {output.value && <RenderResult response={output.value} />}
         {loading.value && <Loading />}
+        {showBigStopButton.value && (
+          <button
+            class="fixed bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded z-10"
+            onClick$={async () => {
+              showBigStopButton.value = false;
+            }}
+          >
+            STOP
+          </button>
+        )}
       </div>
     </div>
   );
