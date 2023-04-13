@@ -40,7 +40,7 @@ In `.env` add a Postgres database URL it as `DATABASE_URL`. YOu can easily set o
 
 ### Generate the tables
 
-You can use the `prisma` CLI to generate the tables in your database.
+You can [prisma migrate](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases/using-prisma-migrate-typescript-postgres) to generate the tables in your database.
 
 ```bash
 npx prisma migrate dev --name init
