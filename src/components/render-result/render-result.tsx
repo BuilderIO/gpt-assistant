@@ -153,7 +153,12 @@ export const RenderResult = component$((props: { response: string }) => {
               {loading.value ? (
                 <Loading />
               ) : (
-                <div class="flex gap-4">
+                <div
+                  class="flex gap-4"
+                  style={{
+                    visibility: continueContext.value ? "hidden" : "visible",
+                  }}
+                >
                   <button
                     id="continue-button"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
@@ -202,7 +207,7 @@ export const RenderResult = component$((props: { response: string }) => {
                   </button>
                   <input
                     type="number"
-                    class="w-[53px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow pr-0 ml-[-19px] rounded-l-none"
+                    class="w-[73px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow pr-0 ml-[-19px] rounded-l-none"
                     value={continueTimes.value}
                     onInput$={(_e, el) => {
                       continueTimes.value = el.valueAsNumber;

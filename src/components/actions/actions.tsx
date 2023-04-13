@@ -8,12 +8,9 @@ import {
 import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { Loading } from "../loading/loading";
-import type {
-  ActionStep,
-  NavigateAction,
-} from "~/functions/get-page-contents";
+import type { ActionStep, NavigateAction } from "~/functions/get-page-contents";
 import { Card } from "../card/card";
-import { ActionsContext, BrowserStateContext } from "~/routes";
+import { ActionsContext, BrowserStateContext, ContinueRunning } from "~/routes";
 
 export type ActionWithId = {
   id: string;
@@ -83,6 +80,7 @@ export const Actions = component$((props: { class?: string }) => {
   const actions = useSignal([] as ActionWithId[]);
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
+  const continueRunningContext = useContext(ContinueRunning);
   const error = useSignal("");
 
   const updateActions = $(async () => {
@@ -123,26 +121,28 @@ export const Actions = component$((props: { class?: string }) => {
               <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm w-full">
                 {JSON.stringify(action.action, null, 2)}
               </pre>
-              <button
-                onClick$={async () => {
-                  if (actions.value.length === 1) {
-                    await clearActions();
-                  } else {
-                    loading.value = true;
-                    await server$(async () => {
-                      const prisma = new PrismaClient();
-                      await prisma.actions.delete({
-                        where: { id: BigInt(action.id) },
-                      });
-                    })();
-                    updateActions();
-                    loading.value = false;
-                  }
-                }}
-                class="absolute bottom-4 right-4 opacity-50 hover:opacity-100"
-              >
-                Delete
-              </button>
+              {!continueRunningContext.value && (
+                <button
+                  onClick$={async () => {
+                    if (actions.value.length === 1) {
+                      await clearActions();
+                    } else {
+                      loading.value = true;
+                      await server$(async () => {
+                        const prisma = new PrismaClient();
+                        await prisma.actions.delete({
+                          where: { id: BigInt(action.id) },
+                        });
+                      })();
+                      updateActions();
+                      loading.value = false;
+                    }
+                  }}
+                  class="absolute bottom-4 right-4 opacity-50 hover:opacity-100"
+                >
+                  Delete
+                </button>
+              )}
             </div>
           );
         })}
@@ -178,7 +178,8 @@ export const Actions = component$((props: { class?: string }) => {
       {loading.value ? (
         <Loading />
       ) : (
-        !!actions.value.length && (
+        !!actions.value.length &&
+        !continueRunningContext.value && (
           <div class="flex gap-3">
             <button
               id="run-actions"
