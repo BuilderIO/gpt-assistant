@@ -45,20 +45,22 @@ function getDefaultPrompt() {
   return getBrowsePrompt();
 }
 
-const showGptPrompt = false;
+const showGptPrompt = true;
 
 export default component$(() => {
   const prompt = useSignal("");
   const output = useSignal("");
   const loading = useSignal(false);
+  const hasBegun = useSignal(false);
   const actionsKey = useSignal(0);
   const browserStateKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
-  const showBigStopButton = useSignal(false);
+  const isRunningContinuously = useSignal(false);
 
   const update = $(async () => {
     output.value = "";
     loading.value = true;
+    hasBegun.value = true;
     await streamCompletion(prompt.value, (value) => {
       output.value += value;
     });
@@ -75,7 +77,7 @@ export default component$(() => {
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
   useContextProvider(GetCompletionContext, hardUpdate);
-  useContextProvider(ContinueRunning, showBigStopButton);
+  useContextProvider(ContinueRunning, isRunningContinuously);
 
   useTask$(async ({ track }) => {
     track(() => browserStateKey.value);
@@ -93,7 +95,7 @@ export default component$(() => {
     <div class="grid grid-cols-3 gap-10 p-10 max-w-[1900px] mx-auto">
       <div class="w-full flex flex-col gap-6">
         <Prompt />
-        {showGptPrompt && prompt.value && (
+        {showGptPrompt && hasBegun.value && (
           <form
             class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
             preventdefault:submit
@@ -120,11 +122,13 @@ export default component$(() => {
               class="block w-auto px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               bind:value={prompt}
             />
-            <div class="flex flex-row gap-3">
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
-                Submit
-              </button>
-            </div>
+            {!isRunningContinuously.value && (
+              <div class="flex flex-row gap-3">
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+                  Submit
+                </button>
+              </div>
+            )}
           </form>
         )}
       </div>
@@ -135,11 +139,11 @@ export default component$(() => {
       <div class="w-full">
         {output.value && <RenderResult response={output.value} />}
         {loading.value && <Loading />}
-        {showBigStopButton.value && (
+        {isRunningContinuously.value && (
           <button
-            class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-5 px-10 rounded z-10"
+            class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-5 px-10 rounded z-10 shadow-lg"
             onClick$={async () => {
-              showBigStopButton.value = false;
+              isRunningContinuously.value = false;
             }}
           >
             STOP

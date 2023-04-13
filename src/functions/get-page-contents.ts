@@ -37,6 +37,25 @@ export type NavigateAction = {
 
 const headless = false;
 
+function decodeEntities(encodedString: string) {
+  const translateRe = /&(nbsp|amp|quot|lt|gt);/g;
+  const translate: Record<string, string> = {
+    nbsp: " ",
+    amp: "&",
+    quot: '"',
+    lt: "<",
+    gt: ">",
+  };
+  return encodedString
+    .replace(translateRe, function (match, entity) {
+      return translate[entity];
+    })
+    .replace(/&#(\d+);/gi, function (match, numStr) {
+      const num = parseInt(numStr, 10);
+      return String.fromCharCode(num);
+    });
+}
+
 async function getMinimalPageHtml(page: Page) {
   return await page.evaluate(() => {
     let main =
@@ -99,9 +118,12 @@ async function getMinimalPageHtml(page: Page) {
       if (el instanceof HTMLAnchorElement) {
         // Only keep the first two query params, to avoid pulling in high entropy
         // tracking params that eat up lots of tokens that are usually later in the URL
-        const numParams = el.href.match(/&/g)?.length;
-        if (typeof numParams === "number" && numParams > 1) {
-          el.href = removeNthQueryParams(el.href, 2);
+        const href = el.getAttribute("href");
+        if (href) {
+          const numParams = href.match(/&/g)?.length;
+          if (typeof numParams === "number" && numParams > 1) {
+            el.setAttribute("href", removeNthQueryParams(href, 2));
+          }
         }
       }
 
@@ -119,13 +141,13 @@ async function getMinimalPageHtml(page: Page) {
         }
       });
 
-      // // Unwrap empty divs and spans
-      // if (["div", "span"].includes(el.tagName.toLowerCase())) {
-      //   // Check has no attributes
-      //   if (!el.attributes.length) {
-      //     el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
-      //   }
-      // }
+      // Unwrap empty divs and spans
+      if (["div", "span"].includes(el.tagName.toLowerCase())) {
+        // Check has no attributes
+        if (!el.attributes.length) {
+          el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
+        }
+      }
     });
 
     // Add all values to the HTML directly
@@ -154,6 +176,10 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 let persistedBrowser: Browser | undefined;
 let persistedPage: Page | undefined;
 
+function modifySelector(selector: string) {
+  return decodeEntities(selector).replace("href=", "href^=");
+}
+
 export const getPageContents = server$(
   async (
     url: string,
@@ -162,6 +188,7 @@ export const getPageContents = server$(
     maxLength = 18000
   ) => {
     const hasExistingBrowser = !!persistedBrowser;
+    url = decodeEntities(url);
 
     console.log({
       persist,
@@ -216,23 +243,26 @@ export const getPageContents = server$(
         if (action.url === url) {
           continue;
         }
-        await page.goto(action.url, {
+        await page.goto(decodeEntities(action.url), {
           waitUntil: "networkidle2",
         });
       } else if (action.action === "click") {
-        await page.click(action.selector).catch(async (err) => {
+        const selector = modifySelector(action.selector);
+        await page.click(selector).catch(async (err) => {
           console.warn("error clicking", err);
           // Fall back to programmatic click, e.g. for a hidden element
           await page.evaluate((selector) => {
             const el = document.querySelector(selector) as HTMLElement;
             el?.click();
-          }, action.selector);
+          }, selector);
         });
       } else if (action.action === "input") {
-        await page.type(action.selector, action.text).catch((err) => {
-          // Ok to continue, often means selector not valid
-          console.warn("error typing", err);
-        });
+        await page
+          .type(modifySelector(action.selector), action.text)
+          .catch((err) => {
+            // Ok to continue, often means selector not valid
+            console.warn("error typing", err);
+          });
       }
       await delay(500);
       await page

@@ -73,9 +73,11 @@ export const Prompt = component$((props: { class?: string }) => {
       if (runParam) {
         prompt.value = runParam;
 
-        url.searchParams.delete("run");
-        history.replaceState({}, "", url.toString());
-        await run();
+        setTimeout(async () => {
+          url.searchParams.delete("run");
+          history.replaceState({}, "", url.toString());
+          await run();
+        }, 10);
       }
     });
   });
