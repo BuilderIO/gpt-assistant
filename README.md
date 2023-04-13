@@ -2,7 +2,7 @@
 
 An experiment to give an autonomous GPT agent access to a browser and have it accomplish tasks.
 
-Built with [Qwik](https://qwik.builder.io/) and [Puppeteer](https://github.com/puppeteer/puppeteer)
+Built with [Qwik](https://qwik.builder.io/) and [Puppeteer](https://github.com/puppeteer/puppeteer).
 
 You can see it in action below in these two video examples, with a description of how it works:
 
