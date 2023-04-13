@@ -22,6 +22,13 @@ Watch the tool in action as I describe what is going on:
 
 ## Setup
 
+### Clone the repo
+
+```bash
+git clone https://github.com/BuilderIO/gpt-assistant.git
+cd gpt-assistant
+```
+
 ### Install dependencies
 
 ```bash
