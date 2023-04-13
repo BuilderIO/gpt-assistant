@@ -13,13 +13,6 @@ You can see it in action below in these two video examples, with a description o
 | ------------- | ------------- |
 | <img alt="Gif example" src="https://user-images.githubusercontent.com/844291/231894320-68de1fa0-b5a8-418a-9018-a50318c5980b.gif"> | <img alt="Gif example 2" src="https://user-images.githubusercontent.com/844291/231897086-241a03df-3f7d-4d85-8eca-aeb3643cd314.gif" >|25f-4c6c-b3b8-dcc52534f2dc.mp4">|
 
-Watch the tool in action as I describe what is going on:
-
-| "Book me a table for 3 at 8pm for indian food"  | "What dog breed is best for me" |
-| ------------- | ------------- |
-| <video src="https://user-images.githubusercontent.com/844291/231892525-adcb1797-d0f2-4a18-8a90-c49256f31a11.mp4">  | <video src="https://user-images.githubusercontent.com/844291/231892541-de438996-e25f-4c6c-b3b8-dcc52534f2dc.mp4">|
-
-
 ## Setup
 
 ### Clone the repo
