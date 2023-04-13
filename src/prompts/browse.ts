@@ -25,7 +25,7 @@ const websiteContents = async () => {
   const browserState = await getBrowserState();
   if (browserState) {
     return `
-The current website content is:
+You are currently on the website ${browserState.url} which has this current HTML content:
 ${browserState.html}
     `.trim();
   }
@@ -56,20 +56,20 @@ export async function getBrowsePrompt() {
 
 You browse the web based and take actions in a web browser based on a prompt.
 
+The prompt is: ${await getPrompt()}
+
+${await websiteContents()}
+
+${actions}
+
 ${
   previousSteps.length > 4
     ? `
-The previous steps you took were:
+The previous actions you took were:
 ${previousSteps}
 `.trim()
     : ""
 }
-
-${await websiteContents()}
-
-The prompt is: ${await getPrompt()}
-
-${actions}
 
 What will the next action${
     useOnlyOneAction ? "" : "s"

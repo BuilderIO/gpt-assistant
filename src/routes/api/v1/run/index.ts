@@ -30,6 +30,6 @@ export const onPost = async (request: RequestEvent) => {
     return request.json(401, { error: values.message });
   }
   const { url, actions } = values;
-  const html = await getPageContents(url, actions);
-  return request.json(200, { html });
+  const { html, url: newUrl } = await getPageContents(url, actions);
+  return request.json(200, { html, url: newUrl });
 };

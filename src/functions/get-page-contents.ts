@@ -47,17 +47,13 @@ async function getMinimalPageHtml(page: Page) {
     main.querySelectorAll("object").forEach((el) => el.remove());
     main.querySelectorAll("[aria-hidden=true]").forEach((el) => el.remove());
 
-    for (const attr of ["class", "target", "rel"]) {
+    for (const attr of ["class", "target", "rel", "ping", "style"]) {
       [main as Element]
         .concat(Array.from(main.querySelectorAll(`[${attr}]`)))
         .forEach((el) => el.removeAttribute(attr));
     }
 
     main.querySelectorAll("*").forEach((el) => {
-      if (!el.isConnected) {
-        return;
-      }
-
       // Remove data-* attrs
       if (el instanceof HTMLElement) {
         Object.keys(el.dataset).forEach((dataKey) => {
@@ -65,13 +61,20 @@ async function getMinimalPageHtml(page: Page) {
         });
       }
 
+      Array.from(el.attributes).forEach((attr) => {
+        // Google adds a bunch of js* attrs
+        if (attr.name.startsWith("js")) {
+          el.removeAttribute(attr.name);
+        }
+      });
+
       // // Unwrap empty divs and spans
-      // if (["div", "span"].includes(el.tagName.toLowerCase())) {
-      //   // Check has no attributes
-      //   if (!el.attributes.length) {
-      //     el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
-      //   }
-      // }
+      if (["div", "span"].includes(el.tagName.toLowerCase())) {
+        // Check has no attributes
+        if (!el.attributes.length) {
+          el.replaceWith(...[document.createTextNode(" "), ...el.childNodes]);
+        }
+      }
     });
 
     // Add all values to the HTML directly
@@ -85,7 +88,10 @@ async function getMinimalPageHtml(page: Page) {
       }
     });
 
-    return main.innerHTML.replace(/\s+/g, " ").trim();
+    return {
+      html: main.innerHTML.replace(/\s+/g, " ").trim(),
+      url: location.href,
+    };
   });
 }
 
@@ -95,13 +101,17 @@ const debugBrowser =
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getPageContents = server$(
-  async (url: string, prevActions: BrowserAction[] = [], maxLength = 10000) => {
+  async (url: string, prevActions: BrowserAction[] = [], maxLength = 20000) => {
     const browser = await puppeteer.launch({ headless });
-    const page = await browser.newPage();
+    let page = await browser.newPage();
+    browser.on("targetcreated", async () => {
+      page = (await browser.pages()).at(-1)!;
+    });
+
     if (debugBrowser) {
       page.on("console", (message) =>
         console.log(
-          `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`
+          `${message.type().substring(0, 3).toUpperCase()} ${message.text()}`
         )
       );
     }
@@ -122,13 +132,22 @@ export const getPageContents = server$(
         if (action.url === url) {
           continue;
         }
-        await page.goto(action.url);
+        await page.goto(action.url, {
+          waitUntil: "networkidle2",
+        });
       } else if (action.action === "click") {
-        await page.click(action.selector);
+        await page.click(action.selector).catch(async (err) => {
+          console.warn("error clicking", err);
+          // Fall back to programmatic click, e.g. for a hidden element
+          await page.evaluate((selector) => {
+            const el = document.querySelector(selector) as HTMLElement;
+            el?.click();
+          }, action.selector);
+        });
       } else if (action.action === "input") {
         await page.type(action.selector, action.text);
       }
-      await delay(100);
+      await delay(1000);
       await page
         .waitForNetworkIdle({
           timeout: 2000,
@@ -138,13 +157,13 @@ export const getPageContents = server$(
         });
     }
 
-    const html = await getMinimalPageHtml(page);
+    const { html, url: currentUrl } = await getMinimalPageHtml(page);
 
     if (!debugBrowser) {
       await page.close();
       await browser.close();
     }
 
-    return html.slice(0, maxLength);
+    return { html: html.slice(0, maxLength), url: currentUrl };
   }
 );

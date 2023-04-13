@@ -49,7 +49,7 @@ export const Prompt = component$((props: { class?: string }) => {
           }}
           placeholder="Your prompt"
           bind:value={prompt}
-          class="block w-full px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm  min-h-[100px]"
+          class="block w-full px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500  min-h-[100px]"
         />
       </Form>
       {(loading.value || updatePromptAction.isRunning) && <Loading />}

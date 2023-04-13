@@ -1,4 +1,4 @@
-import type { Signal } from "@builder.io/qwik";
+import type { QRL, Signal } from "@builder.io/qwik";
 import {
   $,
   component$,
@@ -32,6 +32,9 @@ export const ActionsContext = createContextId<Signal<number>>(
 export const BrowserStateContext = createContextId<Signal<number>>(
   "index.browserStateContext"
 );
+export const GetCompletionContext = createContextId<QRL<() => Promise<void>>>(
+  "index.getCompletionContext"
+);
 
 function getDefaultPrompt() {
   return getBrowsePrompt();
@@ -45,8 +48,19 @@ export default component$(() => {
   const browserStateKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
 
+  const update = $(async () => {
+    output.value = "";
+    loading.value = true;
+    await streamCompletion(prompt.value, (value) => {
+      output.value += value;
+    });
+    loading.value = false;
+    console.debug("Final value:", output.value);
+  });
+
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
+  useContextProvider(GetCompletionContext, update);
 
   useTask$(async ({ track }) => {
     track(() => browserStateKey.value);
@@ -56,16 +70,6 @@ export default component$(() => {
   useVisibleTask$(async () => {
     autogrow(promptTextarea.value!);
     promptTextarea.value?.focus();
-  });
-
-  const update = $(async () => {
-    output.value = "";
-    loading.value = true;
-    await streamCompletion(prompt.value, (value) => {
-      output.value += value;
-    });
-    loading.value = false;
-    console.debug("Final value:", output.value);
   });
 
   return (
@@ -108,12 +112,7 @@ export default component$(() => {
         <Actions />
       </div>
       <div class="w-full">
-        {output.value && (
-          <div class="flex flex-col w-full px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Output</h3>
-            <RenderResult response={output.value} />
-          </div>
-        )}
+        {output.value && <RenderResult response={output.value} />}
         {loading.value && <Loading />}
       </div>
     </div>
