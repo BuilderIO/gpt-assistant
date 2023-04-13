@@ -222,7 +222,10 @@ export const getPageContents = server$(
           }, action.selector);
         });
       } else if (action.action === "input") {
-        await page.type(action.selector, action.text);
+        await page.type(action.selector, action.text).catch((err) => {
+          // Ok to continue, often means selector not valid
+          console.warn("error typing", err);
+        });
       }
       await delay(500);
       await page

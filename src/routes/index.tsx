@@ -137,7 +137,7 @@ export default component$(() => {
         {loading.value && <Loading />}
         {showBigStopButton.value && (
           <button
-            class="fixed bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded z-10"
+            class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-6 px-10 rounded z-10"
             onClick$={async () => {
               showBigStopButton.value = false;
             }}

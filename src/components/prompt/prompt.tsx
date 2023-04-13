@@ -4,6 +4,7 @@ import {
   useContext,
   useSignal,
   useTask$,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { Card } from "../card/card";
 import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
@@ -41,20 +42,6 @@ export const Prompt = component$((props: { class?: string }) => {
   const browserStateContext = useContext(BrowserStateContext);
   const showBigStopButton = useContext(ContinueRunning);
 
-  const updatePrompt = $(async () => {
-    loading.value = true;
-    prompt.value = (await getPrompt()) || "";
-    loading.value = false;
-  });
-
-  useTask$(() => updatePrompt());
-
-  useTask$(({ track }) => {
-    if (track(() => showBigStopButton.value) === false) {
-      loading.value = false;
-    }
-  });
-
   const clearActions = $(async () => {
     await server$(async () => {
       const prisma = new PrismaClient();
@@ -76,7 +63,28 @@ export const Prompt = component$((props: { class?: string }) => {
       return;
     }
     await runCompletion();
+    // HACK: refactor
     (document.querySelector("#continue-button") as HTMLElement).click();
+  });
+
+  useVisibleTask$(() => {
+    setTimeout(async () => {
+      const url = new URL(location.href);
+      const runParam = url.searchParams.get("run");
+      if (runParam) {
+        prompt.value = runParam;
+
+        url.searchParams.delete("run");
+        history.replaceState({}, "", url.toString());
+        await run();
+      }
+    });
+  });
+
+  useTask$(({ track }) => {
+    if (track(() => showBigStopButton.value) === false) {
+      loading.value = false;
+    }
   });
 
   return (
@@ -106,6 +114,7 @@ export const Prompt = component$((props: { class?: string }) => {
         <Loading />
       ) : (
         <button
+          id="run-button"
           type="button"
           onClick$={async () => {
             run();
