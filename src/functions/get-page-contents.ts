@@ -77,7 +77,15 @@ async function getMinimalPageHtml(page: Page) {
       'canvas',
       'object',
       '[aria-hidden=true]',
+      '[class*=header]',
+      '[id*=header]',
     ];
+
+    // HACK: need better HTML compression or longer prompt sizes. In the meantime, remove some sections known to not be useful
+    // In certain places that block the main content. It is only needed on the homepage
+    if (location.hostname === 'opentable.com' && location.pathname !== '/') {
+      selectorsToDelete.push('header');
+    }
 
     for (const element of selectorsToDelete) {
       main.querySelectorAll(element).forEach((el) => el.remove());
