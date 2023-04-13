@@ -2,11 +2,26 @@ import { server$ } from "@builder.io/qwik-city";
 import type { Page, Browser } from "puppeteer";
 import puppeteer from "puppeteer";
 
-export type BrowserAction = ClickAction | InputAction | NavigateAction;
+export type ActionStep =
+  | ClickAction
+  | InputAction
+  | NavigateAction
+  | AskAction
+  | TerminateAction;
 
 export type ClickAction = {
   action: "click";
   selector: string;
+};
+
+export type AskAction = {
+  action: "ask";
+  question: "string";
+};
+
+export type TerminateAction = {
+  action: "terminate";
+  reason: "string";
 };
 
 export type InputAction = {
@@ -135,7 +150,7 @@ let persistedPage: Page | undefined;
 export const getPageContents = server$(
   async (
     url: string,
-    allActions: BrowserAction[] = [],
+    allActions: ActionStep[] = [],
     persist = false,
     maxLength = 18000
   ) => {
@@ -152,8 +167,6 @@ export const getPageContents = server$(
         ? persistedBrowser
         : await puppeteer.launch({
             headless,
-            executablePath:
-              "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
           });
     let page =
       persist && persistedPage ? persistedPage : await browser.newPage();

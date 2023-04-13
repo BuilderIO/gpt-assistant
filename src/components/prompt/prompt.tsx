@@ -14,7 +14,7 @@ import {
   ActionsContext,
   BrowserStateContext,
   GetCompletionContext,
-  ShowBigStopButton,
+  ContinueRunning,
 } from "~/routes";
 
 export const useUpdatePrompt = globalAction$(
@@ -39,7 +39,7 @@ export const Prompt = component$((props: { class?: string }) => {
   const runCompletion = useContext(GetCompletionContext);
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
-  const showBigStopButton = useContext(ShowBigStopButton);
+  const showBigStopButton = useContext(ContinueRunning);
 
   const updatePrompt = $(async () => {
     loading.value = true;
@@ -60,6 +60,7 @@ export const Prompt = component$((props: { class?: string }) => {
       const prisma = new PrismaClient();
       await prisma.actions.deleteMany();
       await prisma.browserState.deleteMany();
+      await prisma.answers.deleteMany();
     })();
     actionsContext.value++;
     browserStateContext.value++;

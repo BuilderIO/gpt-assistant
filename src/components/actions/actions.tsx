@@ -9,7 +9,7 @@ import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
 import { PrismaClient } from "@prisma/client";
 import { Loading } from "../loading/loading";
 import type {
-  BrowserAction,
+  ActionStep,
   NavigateAction,
 } from "~/functions/get-page-contents";
 import { Card } from "../card/card";
@@ -17,7 +17,7 @@ import { ActionsContext, BrowserStateContext } from "~/routes";
 
 export type ActionWithId = {
   id: string;
-  action: BrowserAction;
+  action: ActionStep;
 };
 
 const savePageContents = server$(async (html: string, url: string) => {
@@ -35,7 +35,7 @@ export const getActions = server$(async () => {
     (action) =>
       ({
         id: String(action.id),
-        action: action.data as BrowserAction,
+        action: action.data as ActionStep,
       } satisfies ActionWithId)
   );
 });
@@ -44,7 +44,7 @@ export async function getActionsWithoutId() {
   return (await getActions()).map(({ action }) => action);
 }
 
-async function createAction(action: BrowserAction) {
+async function createAction(action: ActionStep) {
   const prisma = new PrismaClient();
   return await prisma.actions.create({
     data: action as any,
@@ -58,7 +58,7 @@ export const useCreateTaskAction = globalAction$(async ({ action }) => {
 const showAddAction = false;
 const PERSIST = true;
 
-export async function runAndSave(actions: BrowserAction[], persist = PERSIST) {
+export async function runAndSave(actions: ActionStep[], persist = PERSIST) {
   const url = (
     actions.find((action) => action.action === "navigate") as NavigateAction
   ).url;
@@ -102,6 +102,7 @@ export const Actions = component$((props: { class?: string }) => {
       const prisma = new PrismaClient();
       await prisma.actions.deleteMany();
       await prisma.browserState.deleteMany();
+      await prisma.answers.deleteMany();
     })();
     actionsContext.value++;
     browserStateContext.value++;

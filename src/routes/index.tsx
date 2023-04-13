@@ -17,6 +17,8 @@ import { RenderResult } from "~/components/render-result/render-result";
 import { getBrowsePrompt } from "~/prompts/browse";
 import { streamCompletion } from "../functions/stream-completion";
 
+Error.stackTraceLimit = Infinity;
+
 function autogrow(el: HTMLTextAreaElement) {
   // Autogrow
   setTimeout(() => {
@@ -35,8 +37,8 @@ export const BrowserStateContext = createContextId<Signal<number>>(
 export const GetCompletionContext = createContextId<QRL<() => Promise<string>>>(
   "index.getCompletionContext"
 );
-export const ShowBigStopButton = createContextId<Signal<boolean>>(
-  "index.showBigStopButton"
+export const ContinueRunning = createContextId<Signal<boolean>>(
+  "index.continueRunning"
 );
 
 function getDefaultPrompt() {
@@ -73,7 +75,7 @@ export default component$(() => {
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
   useContextProvider(GetCompletionContext, hardUpdate);
-  useContextProvider(ShowBigStopButton, showBigStopButton);
+  useContextProvider(ContinueRunning, showBigStopButton);
 
   useTask$(async ({ track }) => {
     track(() => browserStateKey.value);
@@ -81,8 +83,10 @@ export default component$(() => {
   });
 
   useVisibleTask$(async () => {
-    autogrow(promptTextarea.value!);
-    promptTextarea.value?.focus();
+    if (promptTextarea.value) {
+      autogrow(promptTextarea.value);
+      promptTextarea.value?.focus();
+    }
   });
 
   return (

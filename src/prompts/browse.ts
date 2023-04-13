@@ -82,6 +82,28 @@ The actions you can take:
 const useOnlyOneAction = true;
 const includeThought = false;
 
+const getAnswers = server$(async () => {
+  const prisma = new PrismaClient();
+  const answers = await prisma.answers.findMany();
+  const newAnswers = answers.map((answer) => ({
+    question: answer.question,
+    answer: answer.answer,
+  }));
+  return newAnswers;
+});
+
+async function priorAnswers() {
+  const answers = await getAnswers();
+
+  if (!answers.length) {
+    return "";
+  }
+  return `
+The answers to previous questions you asked are:
+${JSON.stringify(answers)}
+`;
+}
+
 export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
   return `
@@ -102,6 +124,8 @@ ${previousSteps}
 `.trim()
     : ""
 }
+
+${await priorAnswers()}
 
 What will the next action${
     useOnlyOneAction ? "" : "s"

@@ -1,9 +1,5 @@
-import {
-  PropFunction,
-  component$,
-  useSignal,
-  useVisibleTask$,
-} from "@builder.io/qwik";
+import type { PropFunction } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { streamCompletion } from "~/functions/stream-completion";
 import { Loading } from "../loading/loading";
 import { addQuestion } from "~/functions/questions";
@@ -24,11 +20,11 @@ export const Question = component$(
   ({
     question,
     isPartial,
-    onUpdate,
+    onUpdate$,
   }: {
     question: string;
     isPartial?: boolean;
-    onUpdate: PropFunction<() => void>;
+    onUpdate$: PropFunction<(answer: string) => void>;
   }) => {
     const answer = useSignal("");
     const loading = useSignal(false);
@@ -57,7 +53,7 @@ export const Question = component$(
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick$={async () => {
             await addQuestion(question, answer.value);
-            onUpdate();
+            onUpdate$(answer.value);
           }}
         >
           Answer
