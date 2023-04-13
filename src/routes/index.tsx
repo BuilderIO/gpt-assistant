@@ -58,9 +58,14 @@ export default component$(() => {
     console.debug("Final value:", output.value);
   });
 
+  const hardUpdate = $(async () => {
+    prompt.value = await getDefaultPrompt();
+    await update();
+  });
+
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
-  useContextProvider(GetCompletionContext, update);
+  useContextProvider(GetCompletionContext, hardUpdate);
 
   useTask$(async ({ track }) => {
     track(() => browserStateKey.value);

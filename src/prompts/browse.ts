@@ -25,7 +25,9 @@ const websiteContents = async () => {
   const browserState = await getBrowserState();
   if (browserState) {
     return `
-You are currently on the website ${browserState.url} which has this current HTML content:
+You are currently on the website: 
+${browserState.url} 
+Which has this current HTML content:
 ${browserState.html}
     `.trim();
   }
@@ -54,7 +56,7 @@ export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
   return `
 
-You browse the web based and take actions in a web browser based on a prompt.
+You browse the web and take actions in a web browser based on a prompt.
 
 The prompt is: ${await getPrompt()}
 
