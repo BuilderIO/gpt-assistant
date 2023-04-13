@@ -8,7 +8,6 @@ import {
 } from "@builder.io/qwik";
 import { Card } from "../card/card";
 import { Form, globalAction$, server$, z, zod$ } from "@builder.io/qwik-city";
-import { getPrompt } from "~/prompts/browse";
 import { PrismaClient } from "@prisma/client";
 import { Loading } from "../loading/loading";
 import {

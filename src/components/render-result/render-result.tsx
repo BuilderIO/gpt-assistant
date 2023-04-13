@@ -189,7 +189,11 @@ export const RenderResult = component$((props: { response: string }) => {
                           const newValue = await getCompletionContext();
                           await waitForAnswerIfNeeded();
                           checkShouldStop();
-                          actions = parseTextToResponse(newValue)!.actions;
+                          const newActions =
+                            parseTextToResponse(newValue)?.actions;
+                          if (newActions) {
+                            actions = newActions;
+                          }
                         }
                       } catch (err) {
                         if (err instanceof StopError) {

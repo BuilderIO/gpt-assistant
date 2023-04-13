@@ -45,7 +45,7 @@ function getDefaultPrompt() {
   return getBrowsePrompt();
 }
 
-const showGptPrompt = false;
+const showGptPrompt = true;
 
 export default component$(() => {
   const prompt = useSignal("");
@@ -93,7 +93,7 @@ export default component$(() => {
     <div class="grid grid-cols-3 gap-10 p-10 max-w-[1900px] mx-auto">
       <div class="w-full flex flex-col gap-6">
         <Prompt />
-        {showGptPrompt && (
+        {showGptPrompt && prompt.value && (
           <form
             class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
             preventdefault:submit
@@ -137,7 +137,7 @@ export default component$(() => {
         {loading.value && <Loading />}
         {showBigStopButton.value && (
           <button
-            class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-6 px-10 rounded z-10"
+            class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-5 px-10 rounded z-10"
             onClick$={async () => {
               showBigStopButton.value = false;
             }}
