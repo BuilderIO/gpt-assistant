@@ -43,20 +43,27 @@ async function getMinimalPageHtml(page: Page) {
       document.querySelector("main") || document.querySelector("body")!;
     main = main.cloneNode(true) as HTMLElement;
 
-    main.querySelectorAll("script").forEach((el) => el.remove());
-    main.querySelectorAll("style").forEach((el) => el.remove());
-    main.querySelectorAll("link").forEach((el) => el.remove());
-    main.querySelectorAll("meta").forEach((el) => el.remove());
-    main.querySelectorAll("title").forEach((el) => el.remove());
-    main.querySelectorAll("noscript").forEach((el) => el.remove());
-    main.querySelectorAll("iframe").forEach((el) => el.remove());
-    main.querySelectorAll("img").forEach((el) => el.remove());
-    main.querySelectorAll("svg").forEach((el) => el.remove());
-    main.querySelectorAll("video").forEach((el) => el.remove());
-    main.querySelectorAll("audio").forEach((el) => el.remove());
-    main.querySelectorAll("canvas").forEach((el) => el.remove());
-    main.querySelectorAll("object").forEach((el) => el.remove());
-    main.querySelectorAll("[aria-hidden=true]").forEach((el) => el.remove());
+    const selectorsToDelete = [
+      "script",
+      "style",
+      "link",
+      "meta",
+      "header",
+      "title",
+      "noscript",
+      "iframe",
+      "img",
+      "svg",
+      "video",
+      "audio",
+      "canvas",
+      "object",
+      "[aria-hidden=true]",
+    ];
+
+    for (const element of selectorsToDelete) {
+      main.querySelectorAll(element).forEach((el) => el.remove());
+    }
 
     for (const attr of ["class", "target", "rel", "ping", "style"]) {
       [main as Element]

@@ -45,7 +45,7 @@ function getDefaultPrompt() {
   return getBrowsePrompt();
 }
 
-const showGptPrompt = true;
+const showGptPrompt = false;
 
 export default component$(() => {
   const prompt = useSignal("");
