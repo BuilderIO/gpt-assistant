@@ -6,12 +6,11 @@ Built with [Qwik](https://qwik.builder.io/) and [Puppeteer](https://github.com/p
 
 You can see it in action below in these two video examples, with a description of how it works:
 
-
 ## Examples
 
-| "Book me a table for 3 at 8pm for indian food"  | "What dog breed is best for me" |
-| ------------- | ------------- |
-| <img alt="Gif example" src="https://user-images.githubusercontent.com/844291/231894320-68de1fa0-b5a8-418a-9018-a50318c5980b.gif"> | <img alt="Gif example 2" src="https://user-images.githubusercontent.com/844291/231897086-241a03df-3f7d-4d85-8eca-aeb3643cd314.gif" >|25f-4c6c-b3b8-dcc52534f2dc.mp4">|
+| "Book me a table for 3 at 8pm for indian food"                                                                                    | "What dog breed is best for me"                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| <img alt="Gif example" src="https://user-images.githubusercontent.com/844291/231894320-68de1fa0-b5a8-418a-9018-a50318c5980b.gif"> | <img alt="Gif example 2" src="https://user-images.githubusercontent.com/844291/231897086-241a03df-3f7d-4d85-8eca-aeb3643cd314.gif" > | 25f-4c6c-b3b8-dcc52534f2dc.mp4"> |
 
 ## Setup
 
@@ -74,6 +73,8 @@ Now, go enter a prompt for the assistant, and let it run!
 ## Contributing
 
 If you want to help fix a bug or implement a feature, don't hesitate to send a pull request!
+
+Just know that these are the very early days of this project, documentation is sparse, and the code is a bit messy. We're working on it!
 
 ## Community
 
