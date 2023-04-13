@@ -94,6 +94,18 @@ export const Actions = component$((props: { class?: string }) => {
     await updateActions();
   });
 
+  const clearActions = $(async () => {
+    loading.value = true;
+    await server$(async () => {
+      const prisma = new PrismaClient();
+      await prisma.actions.deleteMany();
+      await prisma.browserState.deleteMany();
+    })();
+    actionsContext.value++;
+    browserStateContext.value++;
+    loading.value = false;
+  });
+
   return !showAddAction && !actions.value.length ? null : (
     <Card class={props.class}>
       <h3 class="text-lg leading-6 font-medium text-gray-900">Actions</h3>
@@ -110,15 +122,19 @@ export const Actions = component$((props: { class?: string }) => {
               </pre>
               <button
                 onClick$={async () => {
-                  loading.value = true;
-                  await server$(async () => {
-                    const prisma = new PrismaClient();
-                    await prisma.actions.delete({
-                      where: { id: BigInt(action.id) },
-                    });
-                  })();
-                  updateActions();
-                  loading.value = false;
+                  if (actions.value.length === 1) {
+                    await clearActions();
+                  } else {
+                    loading.value = true;
+                    await server$(async () => {
+                      const prisma = new PrismaClient();
+                      await prisma.actions.delete({
+                        where: { id: BigInt(action.id) },
+                      });
+                    })();
+                    updateActions();
+                    loading.value = false;
+                  }
                 }}
                 class="absolute bottom-4 right-4 opacity-50 hover:opacity-100"
               >
@@ -184,15 +200,7 @@ export const Actions = component$((props: { class?: string }) => {
             <button
               class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
               onClick$={async () => {
-                loading.value = true;
-                await server$(async () => {
-                  const prisma = new PrismaClient();
-                  await prisma.actions.deleteMany();
-                  await prisma.browserState.deleteMany();
-                })();
-                actionsContext.value++;
-                browserStateContext.value++;
-                loading.value = false;
+                clearActions();
               }}
             >
               Clear Actions

@@ -118,6 +118,7 @@ export const RenderResult = component$((props: { response: string }) => {
             ) : (
               <div class="flex gap-4">
                 <button
+                  id="continue-button"
                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
                   onClick$={async () => {
                     let actions = response.actions;

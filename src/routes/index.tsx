@@ -102,7 +102,7 @@ export default component$(() => {
             style={{
               "box-sizing": "content-box",
               "min-height": "100px",
-              "max-height": "60vh",
+              "max-height": "50vh",
             }}
             onFocus$={(e, el) => {
               autogrow(el);
@@ -113,9 +113,11 @@ export default component$(() => {
             class="block w-auto px-4 py-2 mt-1 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             bind:value={prompt}
           />
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Submit
-          </button>
+          <div class="flex flex-row gap-3">
+            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+              Submit
+            </button>
+          </div>
         </form>
       </div>
       <div class="w-full flex flex-col gap-6">
