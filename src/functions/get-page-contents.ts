@@ -75,6 +75,8 @@ async function getMinimalPageHtml(page: Page) {
       'meta',
       'title',
       'noscript',
+      'br',
+      'hr',
       'iframe',
       'template',
       'picture',
@@ -86,9 +88,10 @@ async function getMinimalPageHtml(page: Page) {
       'canvas',
       'object',
       '[aria-hidden=true]',
-      '[class*=header]',
-      '[id*=header]',
+      '[hidden]:not([hidden=false])',
       'details',
+      'input[type=hidden]',
+      '.CodeMirror',
     ];
 
     // HACK: need better HTML compression or longer prompt sizes. In the meantime, remove some sections known to not be useful
@@ -101,7 +104,7 @@ async function getMinimalPageHtml(page: Page) {
       main.querySelectorAll(element).forEach((el) => el.remove());
     }
 
-    for (const attr of ['class', 'target', 'rel', 'ping', 'style']) {
+    for (const attr of ['class', 'target', 'rel', 'ping', 'style', 'title']) {
       [main as Element]
         .concat(Array.from(main.querySelectorAll(`[${attr}]`)))
         .forEach((el) => el.removeAttribute(attr));
@@ -184,7 +187,11 @@ async function getMinimalPageHtml(page: Page) {
     });
 
     return {
-      html: main.innerHTML.replace(/\s+/g, ' ').trim(),
+      html: main.innerHTML
+        // remove HTML comments
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/\s+/g, ' ')
+        .trim(),
       url: location.href,
     };
   });

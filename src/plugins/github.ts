@@ -26,10 +26,10 @@ export default (options: { username: string; password: string }) =>
           await page.goto('https://github.com/login');
 
           // We are logged in already
-          if (await page.$('input[name=login]') === null) {
+          if ((await page.$('input[name=login]')) === null) {
             return;
           }
-          
+
           await page.type('input[name=login]', options.username);
           await page.type('input[name=password]', options.password);
           await page.click('input[type=submit]');
@@ -41,6 +41,24 @@ export default (options: { username: string; password: string }) =>
           await page.waitForNavigation({
             timeout: 1000 * 60 * 5,
           });
+        },
+      },
+      {
+        name: 'github.editCurrentFile',
+        example: {
+          newContent: "console.log('hello world')",
+        },
+        description: 'Edit the currently open file',
+        handler: async ({ action: { newContent }, page }) => {
+          const editbutton = await page.$(
+            '[title="Edit this file"],[aria-label="Edit this file"]'
+          );
+          if (editbutton) {
+            await editbutton.click();
+            await page.waitForNavigation();
+          }
+          await page.waitForSelector('.CodeMirror');
+          await page.type('.CodeMirror-code', newContent);
         },
       },
     ],
