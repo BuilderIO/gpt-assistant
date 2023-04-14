@@ -2,6 +2,11 @@ import { server$ } from '@builder.io/qwik-city';
 import type { Page, Browser } from 'puppeteer';
 import puppeteer from 'puppeteer';
 import { plugins } from '~/plugins';
+import { promises } from 'fs';
+
+const { readFile, writeFile } = promises;
+
+const cookiesFile = './.cookies.json';
 
 export type ActionStep =
   | ClickAction
@@ -71,6 +76,9 @@ async function getMinimalPageHtml(page: Page) {
       'title',
       'noscript',
       'iframe',
+      'template',
+      'picture',
+      'source',
       'img',
       'svg',
       'video',
@@ -80,6 +88,7 @@ async function getMinimalPageHtml(page: Page) {
       '[aria-hidden=true]',
       '[class*=header]',
       '[id*=header]',
+      'details',
     ];
 
     // HACK: need better HTML compression or longer prompt sizes. In the meantime, remove some sections known to not be useful
@@ -156,6 +165,11 @@ async function getMinimalPageHtml(page: Page) {
           el.replaceWith(...[document.createTextNode(' '), ...el.childNodes]);
         }
       }
+
+      // Remove custom elements
+      if (el.tagName.includes('-')) {
+        el.replaceWith(...[document.createTextNode(' '), ...el.childNodes]);
+      }
     });
 
     // Add all values to the HTML directly
@@ -191,14 +205,8 @@ function modifySelector(selector: string) {
 const pluginActions = plugins.map((plugin) => plugin.actions).flat();
 
 export const getPageContents = server$(
-  async (
-    url: string,
-    allActions: ActionStep[] = [],
-    persist = false,
-    maxLength = 18000
-  ) => {
+  async (allActions: ActionStep[] = [], persist = false, maxLength = 18000) => {
     const hasExistingBrowser = !!persistedBrowser;
-    url = decodeEntities(url);
 
     const browser =
       persist && persistedBrowser
@@ -229,13 +237,19 @@ export const getPageContents = server$(
       );
       await page.setViewport({ width: 1080, height: 1024 });
 
-      await page.goto(url, {
-        waitUntil: 'networkidle2',
-      });
-
       if (persist) {
         persistedBrowser = browser;
         persistedPage = page;
+      }
+    }
+
+    if (persist) {
+      const cookiesString = await readFile(cookiesFile, 'utf8')
+        // File doesn't exist, all good
+        .catch(() => '');
+      if (cookiesString) {
+        const cookies = JSON.parse(cookiesString);
+        await page.setCookie(...cookies);
       }
     }
 
@@ -244,9 +258,6 @@ export const getPageContents = server$(
     }
     for (const action of actions) {
       if (action.action === 'navigate') {
-        if (action.url === url) {
-          continue;
-        }
         await page.goto(decodeEntities(action.url), {
           waitUntil: 'networkidle2',
         });
@@ -273,6 +284,10 @@ export const getPageContents = server$(
             await pluginAction.handler({ page, action });
           }
         }
+      }
+      if (persist) {
+        const cookies = await page.cookies();
+        await writeFile(cookiesFile, JSON.stringify(cookies));
       }
       await delay(500);
       await page

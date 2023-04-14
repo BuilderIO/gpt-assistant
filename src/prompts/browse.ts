@@ -163,6 +163,8 @@ ${includeThought ? '{"actions":' : ''}${
 {"action":"click","selector":"#some-button"}]`
   }${includeThought ? `,"thought":"I need to do a thing"}` : ''}
 
+If an action isn't explicitly listed here, it doesn't exist.
+
 ${
   includeThought
     ? `For the thought field, print a "thought", that describes what you need to do and why you are taking those actions, on a new line.`

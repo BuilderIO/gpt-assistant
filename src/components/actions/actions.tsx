@@ -8,7 +8,7 @@ import {
 import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
 import { PrismaClient } from '@prisma/client';
 import { Loading } from '../loading/loading';
-import type { ActionStep, NavigateAction } from '~/functions/get-page-contents';
+import type { ActionStep } from '~/functions/get-page-contents';
 import { Card } from '../card/card';
 import { ActionsContext, BrowserStateContext, ContinueRunning } from '~/routes';
 
@@ -56,10 +56,6 @@ const showAddAction = false;
 const PERSIST = true;
 
 export async function runAndSave(actions: ActionStep[], persist = PERSIST) {
-  const url = (
-    actions.find((action) => action.action === 'navigate') as NavigateAction
-  ).url;
-
   const { html, url: newUrl } = await fetch('/api/v1/run', {
     method: 'POST',
     headers: {
@@ -68,7 +64,6 @@ export async function runAndSave(actions: ActionStep[], persist = PERSIST) {
     body: JSON.stringify({
       actions: actions,
       persist,
-      url,
     }),
   }).then((res) => res.json());
   await savePageContents(html, newUrl);
