@@ -78,7 +78,7 @@ Just know that these are the very early days of this project, documentation is s
 
 ## Community
 
-Come join the [Builder.io discord](https://discord.gg/EMx6e58xnw) and chat with us
+Come join the [Builder.io discord](https://discord.gg/EMx6e58xnw) and chat with us over in the `#gpt-assistant` channel
 
 <br><br>
 
