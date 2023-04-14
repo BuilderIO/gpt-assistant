@@ -68,8 +68,9 @@ export const Prompt = component$((props: { class?: string }) => {
     ) as HTMLElement;
 
     if (!continueButton) {
+      loading.value = false;
       throw new Error(
-        'Cannot continue, was the streamed completion from GPT-4 a success?'
+        'Cannot continue, was the streamed completion from GPT a success?'
       );
     }
     continueButton.click();
