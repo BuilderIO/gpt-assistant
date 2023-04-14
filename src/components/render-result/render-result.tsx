@@ -6,7 +6,6 @@ import {
   useTask$,
 } from '@builder.io/qwik';
 import { server$ } from '@builder.io/qwik-city';
-import { PrismaClient } from '@prisma/client';
 import type { ActionStep } from '~/functions/get-page-contents';
 import {
   ActionsContext,
@@ -18,6 +17,7 @@ import { Loading } from '../loading/loading';
 import { getActions, runAndSave } from '../actions/actions';
 import { getBrowserState } from '~/prompts/browse';
 import { Question } from '../question/question';
+import { prismaClient } from '~/constants/prisma-client';
 
 interface TextBlock {
   type: 'text';
@@ -83,8 +83,7 @@ export function parseTextToResponse(text: string): ResponseBlock | undefined {
 }
 
 const insertActions = server$(async (actions: ActionStep[]) => {
-  const prisma = new PrismaClient();
-  await prisma.actions.createMany({
+  await prismaClient!.actions.createMany({
     data: actions.map((action) => ({
       data: action,
       workflow_id: '1',

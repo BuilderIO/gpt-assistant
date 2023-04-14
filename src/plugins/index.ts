@@ -8,7 +8,10 @@ export type PluginAction<
   name: Name;
   description: string;
   example?: T;
-  handler: (info: { action: T & { action: Name }; page: Page }) => Promise<void>;
+  handler: (info: {
+    action: T & { action: Name };
+    page: Page;
+  }) => Promise<void>;
 };
 
 export type Plugin = {

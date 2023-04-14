@@ -6,11 +6,11 @@ import {
   useTask$,
 } from '@builder.io/qwik';
 import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
-import { PrismaClient } from '@prisma/client';
-import { Loading } from '../loading/loading';
+import { prismaClient } from '~/constants/prisma-client';
 import type { ActionStep } from '~/functions/get-page-contents';
-import { Card } from '../card/card';
 import { ActionsContext, BrowserStateContext, ContinueRunning } from '~/routes';
+import { Card } from '../card/card';
+import { Loading } from '../loading/loading';
 
 export type ActionWithId = {
   id: string;
@@ -18,8 +18,7 @@ export type ActionWithId = {
 };
 
 const savePageContents = server$(async (html: string, url: string) => {
-  const prisma = new PrismaClient();
-  await prisma.browserState.upsert({
+  await prismaClient!.browserState.upsert({
     where: { id: 1 },
     update: { html, url },
     create: { id: 1, html, url },
@@ -27,8 +26,7 @@ const savePageContents = server$(async (html: string, url: string) => {
 });
 
 export const getActions = server$(async () => {
-  const prisma = new PrismaClient();
-  return (await prisma.actions.findMany()).map(
+  return (await prismaClient!.actions.findMany()).map(
     (action) =>
       ({
         id: String(action.id),
@@ -42,8 +40,7 @@ export async function getActionsWithoutId() {
 }
 
 async function createAction(action: ActionStep) {
-  const prisma = new PrismaClient();
-  return await prisma.actions.create({
+  return await prismaClient!.actions.create({
     data: action as any,
   });
 }
@@ -92,10 +89,9 @@ export const Actions = component$((props: { class?: string }) => {
   const clearActions = $(async () => {
     loading.value = true;
     await server$(async () => {
-      const prisma = new PrismaClient();
-      await prisma.actions.deleteMany();
-      await prisma.browserState.deleteMany();
-      await prisma.answers.deleteMany();
+      await prismaClient!.actions.deleteMany();
+      await prismaClient!.browserState.deleteMany();
+      await prismaClient!.answers.deleteMany();
     })();
     actionsContext.value++;
     browserStateContext.value++;
@@ -124,8 +120,7 @@ export const Actions = component$((props: { class?: string }) => {
                     } else {
                       loading.value = true;
                       await server$(async () => {
-                        const prisma = new PrismaClient();
-                        await prisma.actions.delete({
+                        await prismaClient!.actions.delete({
                           where: { id: BigInt(action.id) },
                         });
                       })();
@@ -154,8 +149,7 @@ export const Actions = component$((props: { class?: string }) => {
             onClick$={async () => {
               loading.value = true;
               await server$(async () => {
-                const prisma = new PrismaClient();
-                await prisma.actions.deleteMany();
+                await prismaClient!.actions.deleteMany();
               })();
               updateActions();
               loading.value = false;

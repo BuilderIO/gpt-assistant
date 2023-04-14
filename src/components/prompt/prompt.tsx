@@ -8,7 +8,6 @@ import {
 } from '@builder.io/qwik';
 import { Card } from '../card/card';
 import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
-import { PrismaClient } from '@prisma/client';
 import { Loading } from '../loading/loading';
 import {
   ActionsContext,
@@ -16,11 +15,11 @@ import {
   GetCompletionContext,
   ContinueRunning,
 } from '~/routes';
+import { prismaClient } from '~/constants/prisma-client';
 
 export const useUpdatePrompt = globalAction$(
   async ({ prompt }) => {
-    const prisma = new PrismaClient();
-    await prisma.prompt.upsert({
+    await prismaClient!.prompt.upsert({
       update: { text: prompt },
       create: { text: prompt, id: 1 },
       where: { id: 1 },
@@ -43,10 +42,9 @@ export const Prompt = component$((props: { class?: string }) => {
 
   const clearActions = $(async () => {
     await server$(async () => {
-      const prisma = new PrismaClient();
-      await prisma.actions.deleteMany();
-      await prisma.browserState.deleteMany();
-      await prisma.answers.deleteMany();
+      await prismaClient!.actions.deleteMany();
+      await prismaClient!.browserState.deleteMany();
+      await prismaClient!.answers.deleteMany();
     })();
     actionsContext.value++;
     browserStateContext.value++;

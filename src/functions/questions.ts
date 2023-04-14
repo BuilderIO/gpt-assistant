@@ -1,13 +1,11 @@
 import { server$ } from '@builder.io/qwik-city';
-import { PrismaClient } from '@prisma/client';
+import { prismaClient } from '~/constants/prisma-client';
 
 const workflowId = 'test';
 
 export const addQuestion = server$(
   async (question: string, answer: string, workflow = workflowId) => {
-    const prisma = new PrismaClient();
-
-    return await prisma.answers.create({
+    return await prismaClient!.answers.create({
       data: {
         question,
         answer,
@@ -18,9 +16,7 @@ export const addQuestion = server$(
 );
 
 export const getQuestions = server$(async (workflow = workflowId) => {
-  const prisma = new PrismaClient();
-
-  return await prisma.answers.findMany({
+  return await prismaClient!.answers.findMany({
     where: {
       workflow_id: workflow,
     },

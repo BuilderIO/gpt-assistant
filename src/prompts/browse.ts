@@ -1,7 +1,7 @@
 import { server$ } from '@builder.io/qwik-city';
-import { PrismaClient } from '@prisma/client';
 import { getActionsWithoutId } from '~/components/actions/actions';
 import type { BrowserStateSafeType } from '~/components/browser-state/browser-state';
+import { prismaClient } from '~/constants/prisma-client';
 import { plugins } from '~/plugins';
 
 const getPreviousSteps = async () =>
@@ -27,8 +27,7 @@ const getPluginActions = server$(() => {
 
 export const getBrowserState = server$(
   async (): Promise<BrowserStateSafeType | null> => {
-    const prisma = new PrismaClient();
-    const browserState = await prisma.browserState.findFirst();
+    const browserState = await prismaClient!.browserState.findFirst();
     return browserState
       ? {
           ...browserState,
@@ -76,8 +75,7 @@ ${browserState.html}
 };
 
 export const getPrompt = server$(async () => {
-  const prisma = new PrismaClient();
-  const prompt = await prisma.prompt.findFirst({});
+  const prompt = await prismaClient!.prompt.findFirst({});
   return prompt?.text;
 });
 
@@ -104,8 +102,7 @@ const useOnlyOneAction = true;
 const includeThought = false;
 
 const getAnswers = server$(async () => {
-  const prisma = new PrismaClient();
-  const answers = await prisma.answers.findMany();
+  const answers = await prismaClient!.answers.findMany();
   const newAnswers = answers.map((answer) => ({
     question: answer.question,
     answer: answer.answer,
