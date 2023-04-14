@@ -47,6 +47,14 @@ function getDefaultPrompt() {
 
 const showGptPrompt = true;
 
+const tryJsonParse = (value: string) => {
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return null;
+  }
+};
+
 export default component$(() => {
   const prompt = useSignal('');
   const output = useSignal('');
@@ -56,14 +64,20 @@ export default component$(() => {
   const browserStateKey = useSignal(0);
   const promptTextarea = useSignal<HTMLTextAreaElement>();
   const isRunningContinuously = useSignal(false);
+  const error = useSignal('');
 
   const update = $(async () => {
     output.value = '';
+    error.value = '';
     loading.value = true;
     hasBegun.value = true;
-    await streamCompletion(prompt.value, (value) => {
+    const finalMessage = await streamCompletion(prompt.value, (value) => {
       output.value += value;
     });
+    const parsed = tryJsonParse(finalMessage);
+    if (parsed && parsed.error) {
+      error.value = JSON.stringify(parsed.error, null, 2);
+    }
     loading.value = false;
     console.debug('Final value:', output.value);
     return output.value;
@@ -139,6 +153,12 @@ export default component$(() => {
       <div class="w-full">
         {output.value && <RenderResult response={output.value} />}
         {loading.value && <Loading />}
+        {error.value && (
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative whitespace-pre-wrap overflow-auto">
+            {error.value}
+          </div>
+        )}
+
         {isRunningContinuously.value && (
           <button
             class="fixed text-xl bottom-10 right-10 bg-red-500 hover:bg-red-700 text-white font-bold py-5 px-10 rounded z-10 shadow-lg"

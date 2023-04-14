@@ -20,6 +20,7 @@ export async function streamCompletion(
 
   const reader = res.body!.getReader();
   const decoder = new TextDecoder('utf-8');
+  let fullString = '';
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -35,6 +36,7 @@ export async function streamCompletion(
       .filter(Boolean);
     let newString = '';
     for (const string of strings) {
+      fullString += string;
       const prefix = 'data: ';
       if (string.startsWith(prefix)) {
         const json = string.slice(prefix.length);
@@ -47,4 +49,5 @@ export async function streamCompletion(
     }
     onData(newString);
   }
+  return fullString;
 }

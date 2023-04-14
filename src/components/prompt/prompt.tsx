@@ -63,7 +63,7 @@ export const Prompt = component$((props: { class?: string }) => {
     }
     await runCompletion();
     // HACK: refactor
-    (document.querySelector('#continue-button') as HTMLElement).click();
+    (document.querySelector('#continue-button') as HTMLElement)?.click();
   });
 
   useVisibleTask$(() => {
