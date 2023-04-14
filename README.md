@@ -10,7 +10,7 @@ You can see it in action below in these two video examples, with a description o
 
 | "Book me a table for 3 at 8pm for indian food"                                                                                    | "What dog breed is best for me"                                                                                                      |
 | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| <img alt="Gif example" src="https://user-images.githubusercontent.com/844291/231894320-68de1fa0-b5a8-418a-9018-a50318c5980b.gif"> | <img alt="Gif example 2" src="https://user-images.githubusercontent.com/844291/231897086-241a03df-3f7d-4d85-8eca-aeb3643cd314.gif" > |
+| <img alt="Gif example" src="https://user-images.githubusercontent.com/844291/231897086-241a03df-3f7d-4d85-8eca-aeb3643cd314.gif"> | <img alt="Gif example 2" src="https://user-images.githubusercontent.com/844291/231894320-68de1fa0-b5a8-418a-9018-a50318c5980b.gif" > |
 
 ## Setup
 
