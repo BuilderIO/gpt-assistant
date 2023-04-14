@@ -63,7 +63,16 @@ export const Prompt = component$((props: { class?: string }) => {
     }
     await runCompletion();
     // HACK: refactor
-    (document.querySelector('#continue-button') as HTMLElement)?.click();
+    const continueButton = document.querySelector(
+      '#continue-button'
+    ) as HTMLElement;
+
+    if (!continueButton) {
+      throw new Error(
+        'Cannot continue, was the streamed completion from GPT-4 a success?'
+      );
+    }
+    continueButton.click();
   });
 
   useVisibleTask$(() => {
