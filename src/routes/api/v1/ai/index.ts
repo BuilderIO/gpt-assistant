@@ -68,7 +68,7 @@ export async function generateCompletion({
   try {
     const completion = await openAi.createChatCompletion(
       {
-        model: model || 'gpt-3.5-turbo',
+        model: model || process.env.MODEL || 'gpt-4',
         messages: prompt,
         stream: true,
         n: number || 1,
