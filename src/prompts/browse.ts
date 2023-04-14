@@ -2,11 +2,28 @@ import { server$ } from '@builder.io/qwik-city';
 import { PrismaClient } from '@prisma/client';
 import { getActionsWithoutId } from '~/components/actions/actions';
 import type { BrowserStateSafeType } from '~/components/browser-state/browser-state';
+import { plugins } from '~/plugins';
 
 const getPreviousSteps = async () =>
   `
 ${JSON.stringify(await getActionsWithoutId())}
 `.trim();
+
+const getPluginActions = server$(() => {
+  if (!plugins.length) {
+    return '';
+  }
+  return plugins
+    .map((plugin) => plugin.actions)
+    .flat()
+    .map((action) => {
+      return `- ${action.description}, like: ${JSON.stringify({
+        action: action.name,
+        ...action.example,
+      })}`;
+    })
+    .join('\n');
+});
 
 export const getBrowserState = server$(
   async (): Promise<BrowserStateSafeType | null> => {
@@ -66,17 +83,19 @@ export const getPrompt = server$(async () => {
 
 const includeAsk = false;
 
-const actions = `
+const getActions = async () =>
+  `
 The actions you can take:
 - load a website, like: {"action":"navigate","url":"https://www.google.com"}
 - click something, like: {"action":"click","selector":"#some-button"}
 - input something, like: {"action":"input","selector":"#some-input","text":"some text"}${
-  !includeAsk
-    ? ''
-    : `
+    !includeAsk
+      ? ''
+      : `
 - ask a question to the user to get information you require that was not yet provided, like: {"action":"ask","question":"What is your name?"}`
-}
+  }
 - terminate the program, like: {"action":"terminate","reason":"The restaurant you wanted is not available"}
+${await getPluginActions()}
 
 When you provide a selector, be sure that that selector is actually on the current page you are on. It needs to be in the HTML you are provided or don't use it.
 `.trim();
@@ -116,7 +135,7 @@ The prompt is: ${await getPrompt()}
 
 ${await websiteContents()}
 
-${actions}
+${await getActions()}
 
 ${
   previousSteps.length > 4

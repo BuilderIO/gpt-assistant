@@ -1,6 +1,7 @@
 import { server$ } from '@builder.io/qwik-city';
 import type { Page, Browser } from 'puppeteer';
 import puppeteer from 'puppeteer';
+import { plugins } from '~/plugins';
 
 export type ActionStep =
   | ClickAction
@@ -187,6 +188,8 @@ function modifySelector(selector: string) {
   return decodeEntities(selector).replace('href=', 'href^=');
 }
 
+const pluginActions = plugins.map((plugin) => plugin.actions).flat();
+
 export const getPageContents = server$(
   async (
     url: string,
@@ -196,12 +199,6 @@ export const getPageContents = server$(
   ) => {
     const hasExistingBrowser = !!persistedBrowser;
     url = decodeEntities(url);
-
-    console.log({
-      persist,
-      hasExistingBrowser,
-      hasExistingPage: !!persistedPage,
-    });
 
     const browser =
       persist && persistedBrowser
@@ -270,6 +267,12 @@ export const getPageContents = server$(
             // Ok to continue, often means selector not valid
             console.warn('error typing', err);
           });
+      } else {
+        for (const pluginAction of pluginActions) {
+          if (pluginAction.name === action.action) {
+            await pluginAction.handler({ page, action });
+          }
+        }
       }
       await delay(500);
       await page
