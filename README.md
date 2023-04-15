@@ -43,7 +43,7 @@ npm install
 Copy the `.env.example` file to `.env`
 
 ```bash
-cp .env.example .env
+cp .env.template .env
 ```
 
 ### Add your OpenAI API key
