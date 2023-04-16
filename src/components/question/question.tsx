@@ -43,7 +43,7 @@ export const Question = component$(
     });
 
     return (
-      <div class="w-auto h-64 bg-white rounded-xl shadow-lg p-8">
+      <div class="w-auto bg-white rounded-xl shadow-lg p-8">
         <h3 class="font-bold mb-2">{question}</h3>
         <textarea
           class="p-2 border-2 border-gray-200 w-full mb-2"
