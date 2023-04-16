@@ -20,6 +20,7 @@ model Actions {
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
   workflow_id String
   data        Json
+  result      String?
 }
 
 model Prompt {

@@ -6,7 +6,7 @@ import {
   useTask$,
 } from '@builder.io/qwik';
 import { server$ } from '@builder.io/qwik-city';
-import type { ActionStep } from '~/functions/get-page-contents';
+import type { ActionStep } from '~/functions/run-action';
 import {
   ActionsContext,
   BrowserStateContext,
@@ -183,9 +183,7 @@ export const RenderResult = component$((props: { response: string }) => {
                           checkShouldStop();
                           actionsContext.value++;
                           approved.value = true;
-                          await runAndSave(
-                            (await getActions()).map((action) => action.action)
-                          );
+                          await runAndSave((await getActions()).at(-1)!);
                           checkShouldStop();
                           browserStateContext.value++;
                           const newValue = await getCompletionContext();

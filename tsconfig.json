@@ -21,6 +21,6 @@
       "~/*": ["./src/*"]
     }
   },
-  "files": ["./.eslintrc.cjs", "src/functions/stream-completion.tsx"],
+  "files": ["./.eslintrc.cjs", "src/functions/stream-completion.tsx", "src/functions/remove-nth-query-params.ts"],
   "include": ["src"]
 }

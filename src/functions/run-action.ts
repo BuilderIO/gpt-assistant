@@ -3,6 +3,9 @@ import type { Page, Browser } from 'puppeteer';
 import puppeteer from 'puppeteer';
 import { plugins } from '~/plugins';
 import { promises } from 'fs';
+import { prismaClient } from '~/constants/prisma-client';
+import { removeNthQueryParams } from './remove-nth-query-params';
+import { Actions } from '@prisma/client';
 
 const { readFile, writeFile } = promises;
 
@@ -16,7 +19,7 @@ export type ActionStep =
   | TerminateAction;
 
 export type ClickAction = {
-  action: 'click';
+  action: 'browser.click';
   selector: string;
 };
 
@@ -31,13 +34,13 @@ export type TerminateAction = {
 };
 
 export type InputAction = {
-  action: 'input';
+  action: 'browser.input';
   selector: string;
   text: string;
 };
 
 export type NavigateAction = {
-  action: 'navigate';
+  action: 'browser.navigate';
   url: string;
 };
 
@@ -60,6 +63,22 @@ function decodeEntities(encodedString: string) {
       const num = parseInt(numStr, 10);
       return String.fromCharCode(num);
     });
+}
+
+async function execAction(action: PartialAction) {
+  for (const pluginAction of pluginActions) {
+    if (pluginAction.name === (action.data as ActionStep).action) {
+      const result = await pluginAction.handler({
+        context: {},
+        action: action,
+      });
+      await prismaClient!.actions.update({
+        where: { id: action.id },
+        data: { result: result || '' },
+      });
+      return result;
+    }
+  }
 }
 
 async function getMinimalPageHtml(page: Page) {
@@ -211,8 +230,17 @@ function modifySelector(selector: string) {
 
 const pluginActions = plugins.map((plugin) => plugin.actions).flat();
 
-export const getPageContents = server$(
-  async (allActions: ActionStep[] = [], persist = false, maxLength = 18000) => {
+export type PartialAction = Pick<Actions, 'id' | 'data'>;
+
+export const runAction = server$(
+  async (theAction: PartialAction, persist = false, maxLength = 18000) => {
+    const action = theAction.data as ActionStep;
+    const needsBrowser = action.action.startsWith('browser.');
+
+    if (!needsBrowser) {
+      return await execAction(theAction);
+    }
+
     const hasExistingBrowser = !!persistedBrowser;
 
     const browser =
@@ -223,8 +251,6 @@ export const getPageContents = server$(
           });
     let page =
       persist && persistedPage ? persistedPage : await browser.newPage();
-
-    const actions = persist ? allActions.slice(-1) : allActions;
 
     if (!hasExistingBrowser) {
       browser.on('targetcreated', async () => {
@@ -261,58 +287,69 @@ export const getPageContents = server$(
     }
 
     if (debugBrowser) {
-      console.log('actions', actions);
-    }
-    for (const action of actions) {
-      if (action.action === 'navigate') {
-        await page.goto(decodeEntities(action.url), {
-          waitUntil: 'networkidle2',
-        });
-      } else if (action.action === 'click') {
-        const selector = modifySelector(action.selector);
-        await page.click(selector).catch(async (err) => {
-          console.warn('error clicking', err);
-          // Fall back to programmatic click, e.g. for a hidden element
-          await page.evaluate((selector) => {
-            const el = document.querySelector(selector) as HTMLElement;
-            el?.click();
-          }, selector);
-        });
-      } else if (action.action === 'input') {
-        await page
-          .type(modifySelector(action.selector), action.text)
-          .catch((err) => {
-            // Ok to continue, often means selector not valid
-            console.warn('error typing', err);
-          });
-      } else {
-        for (const pluginAction of pluginActions) {
-          if (pluginAction.name === action.action) {
-            await pluginAction.handler({ page, action });
-          }
-        }
-      }
-      if (persist) {
-        const cookies = await page.cookies();
-        await writeFile(cookiesFile, JSON.stringify(cookies));
-      }
-      await delay(500);
-      await page
-        .waitForNetworkIdle({
-          timeout: 1000,
-        })
-        .catch(() => {
-          // Errors are thrown on timeout, but we don't care about that
-        });
+      console.log('action', action);
     }
 
+    if (action.action === 'browser.navigate') {
+      await page.goto(decodeEntities(action.url), {
+        waitUntil: 'networkidle2',
+      });
+    } else if (action.action === 'browser.click') {
+      const selector = modifySelector(action.selector);
+      await page.click(selector).catch(async (err) => {
+        console.warn('error clicking', err);
+        // Fall back to programmatic click, e.g. for a hidden element
+        await page.evaluate((selector) => {
+          const el = document.querySelector(selector) as HTMLElement;
+          el?.click();
+        }, selector);
+      });
+    } else if (action.action === 'browser.input') {
+      await page
+        .type(modifySelector(action.selector), action.text)
+        .catch((err) => {
+          // Ok to continue, often means selector not valid
+          console.warn('error typing', err);
+        });
+    } else {
+      return await execAction(theAction);
+    }
+    if (persist) {
+      const cookies = await page.cookies();
+      await writeFile(cookiesFile, JSON.stringify(cookies));
+    }
+
+    await delay(500);
+    await page
+      .waitForNetworkIdle({
+        timeout: 1000,
+      })
+      .catch(() => {
+        // Errors are thrown on timeout, but we don't care about that
+      });
+
     const { html, url: currentUrl } = await getMinimalPageHtml(page);
+    await savePageContents(html, currentUrl);
 
     if (!persist && !debugBrowser) {
       await page.close();
       await browser.close();
     }
 
-    return { html: html.slice(0, maxLength), url: currentUrl };
+    return `
+You are currently on the website: 
+${removeNthQueryParams(currentUrl!, 2)} 
+
+Which has this current HTML content:
+${html.slice(0, maxLength)}
+`.trim();
   }
 );
+
+const savePageContents = server$(async (html: string, url: string) => {
+  await prismaClient!.browserState.upsert({
+    where: { id: 1 },
+    update: { html, url },
+    create: { id: 1, html, url },
+  });
+});

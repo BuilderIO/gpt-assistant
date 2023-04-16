@@ -5,18 +5,15 @@ import type { BrowserState as BrowserStateType } from '@prisma/client';
 import { getBrowserState } from '~/prompts/browse';
 import { Loading } from '../loading/loading';
 
-export type BrowserStateSafeType = Omit<BrowserStateType, 'id'> & {
-  id: string;
-};
-
 export const BrowserState = component$(() => {
   const browserStateContext = useContext(BrowserStateContext);
-  const browserState = useSignal<BrowserStateSafeType | null>(null);
+  const browserState = useSignal<BrowserStateType | null>(null);
   const loading = useSignal(false);
 
   useTask$(async ({ track }) => {
     track(() => browserStateContext.value);
     loading.value = true;
+    // eslint-disable-next-line qwik/valid-lexical-scope
     browserState.value = await getBrowserState();
     loading.value = false;
   });

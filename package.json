@@ -20,7 +20,7 @@
     "qwik": "qwik"
   },
   "devDependencies": {
-    "@builder.io/qwik": "0.101.0",
+    "@builder.io/qwik": "^0.102.0",
     "@builder.io/qwik-city": "~0.101.0",
     "@types/eslint": "8.37.0",
     "@types/node": "^18.15.9",
@@ -42,6 +42,9 @@
     "@prisma/client": "^4.12.0",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.3",
+    "execa": "^7.1.1",
+    "glob": "^10.1.0",
+    "next-dark-mode": "^3.0.0",
     "openai": "^3.2.1",
     "puppeteer": "^19.8.5",
     "zod": "^3.21.4"

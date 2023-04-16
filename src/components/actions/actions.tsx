@@ -7,36 +7,22 @@ import {
 } from '@builder.io/qwik';
 import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
 import { prismaClient } from '~/constants/prisma-client';
-import type { ActionStep } from '~/functions/get-page-contents';
+import type { ActionStep } from '~/functions/run-action';
 import { ActionsContext, BrowserStateContext, ContinueRunning } from '~/routes';
 import { Card } from '../card/card';
 import { Loading } from '../loading/loading';
+import type { Actions as Action } from '@prisma/client';
 
-export type ActionWithId = {
-  id: string;
-  action: ActionStep;
-};
+export type ActionWithId = Pick<Action, 'data' | 'id'>;
 
-const savePageContents = server$(async (html: string, url: string) => {
-  await prismaClient!.browserState.upsert({
-    where: { id: 1 },
-    update: { html, url },
-    create: { id: 1, html, url },
+export const getActions = server$(async () => {
+  return await prismaClient!.actions.findMany({
+    select: { id: true, data: true },
   });
 });
 
-export const getActions = server$(async () => {
-  return (await prismaClient!.actions.findMany()).map(
-    (action) =>
-      ({
-        id: String(action.id),
-        action: action.data as ActionStep,
-      } satisfies ActionWithId)
-  );
-});
-
 export async function getActionsWithoutId() {
-  return (await getActions()).map(({ action }) => action);
+  return (await getActions()).map(({ data }) => data);
 }
 
 async function createAction(action: ActionStep) {
@@ -52,18 +38,23 @@ export const useCreateTaskAction = globalAction$(async ({ action }) => {
 const showAddAction = false;
 const PERSIST = true;
 
-export async function runAndSave(actions: ActionStep[], persist = PERSIST) {
-  const { html, url: newUrl } = await fetch('/api/v1/run', {
+export async function runAndSave(
+  action: Pick<Action, 'data' | 'id'>,
+  persist = PERSIST
+) {
+  await fetch('/api/v1/run', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      actions: actions,
+      action: {
+        ...action,
+        id: String(action.id),
+      },
       persist,
     }),
   }).then((res) => res.json());
-  await savePageContents(html, newUrl);
 }
 
 export const Actions = component$((props: { class?: string }) => {
@@ -77,6 +68,7 @@ export const Actions = component$((props: { class?: string }) => {
 
   const updateActions = $(async () => {
     loading.value = true;
+    // eslint-disable-next-line qwik/valid-lexical-scope
     actions.value = await getActions();
     loading.value = false;
   });
@@ -106,21 +98,23 @@ export const Actions = component$((props: { class?: string }) => {
         {actions.value.map((action) => {
           return (
             <div
-              key={action.id}
+              key={String(action.id)}
               class="relative flex flex-row space-x-4 w-full"
             >
               <pre class="border rounded p-4 bg-gray-100 overflow-auto text-sm w-full">
-                {JSON.stringify(action.action, null, 2)}
+                {JSON.stringify(action.data, null, 2)}
               </pre>
               {!continueRunningContext.value && (
                 <button
                   onClick$={async () => {
+                    // eslint-disable-next-line qwik/valid-lexical-scope
                     if (actions.value.length === 1) {
                       await clearActions();
                     } else {
                       loading.value = true;
                       await server$(async () => {
                         await prismaClient!.actions.delete({
+                          // eslint-disable-next-line qwik/valid-lexical-scope
                           where: { id: BigInt(action.id) },
                         });
                       })();
@@ -177,9 +171,8 @@ export const Actions = component$((props: { class?: string }) => {
                 error.value = '';
                 loading.value = true;
                 try {
-                  await runAndSave(
-                    actions.value.map((action) => action.action)
-                  );
+                  // eslint-disable-next-line qwik/valid-lexical-scope
+                  await runAndSave(actions.value.at(-1)!);
                   browserStateContext.value++;
                 } catch (err) {
                   error.value = String(err);

@@ -1,16 +1,26 @@
 import type { Plugin } from '.';
 
+class NoPageError extends Error {
+  constructor(message?: string) {
+    super(message || 'No active browser page found');
+  }
+}
+
 export default (options: { username: string; password: string }) =>
   ({
     name: 'github',
+    requires: ['browser'],
     actions: [
       {
-        name: 'github.openRepo',
-        description: 'Open a GitHub repo',
+        name: 'browser.github.openRepo',
+        description: 'Open a GitHub repo in the browser',
         example: {
           name: 'builder',
         },
-        handler: async ({ action: { name }, page }) => {
+        handler: async ({ action: { name }, context: { page } }) => {
+          if (!page) {
+            throw new NoPageError();
+          }
           await page.goto('https://github.com/search');
           await page.type('input[name=q]', name);
           await page.click('#search_form button[type=submit]');
@@ -20,9 +30,12 @@ export default (options: { username: string; password: string }) =>
         },
       },
       {
-        name: 'github.login',
-        description: 'Log in to github',
-        handler: async ({ page }) => {
+        name: 'browser.github.login',
+        description: 'Log in to github in the browser',
+        handler: async ({ context: { page } }) => {
+          if (!page) {
+            throw new NoPageError();
+          }
           await page.goto('https://github.com/login');
 
           // We are logged in already
@@ -44,12 +57,15 @@ export default (options: { username: string; password: string }) =>
         },
       },
       {
-        name: 'github.editCurrentFile',
+        name: 'browser.github.editCurrentFile',
         example: {
           newContent: "console.log('hello world')",
         },
-        description: 'Edit the currently open file',
-        handler: async ({ action: { newContent }, page }) => {
+        description: 'Edit the currently open file in the browser',
+        handler: async ({ action: { newContent }, context: { page } }) => {
+          if (!page) {
+            throw new NoPageError();
+          }
           const editbutton = await page.$(
             '[title="Edit this file"],[aria-label="Edit this file"]'
           );

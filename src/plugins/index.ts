@@ -1,5 +1,10 @@
 import type { Page } from 'puppeteer';
-import github from './github';
+// import github from './github';
+import exec from './exec';
+
+type PluginContext = {
+  page?: Page;
+};
 
 export type PluginAction<
   T extends Record<string, string | number>,
@@ -10,18 +15,14 @@ export type PluginAction<
   example?: T;
   handler: (info: {
     action: T & { action: Name };
-    page: Page;
-  }) => Promise<void>;
+    context: PluginContext;
+  }) => Promise<string | void | null>;
 };
 
 export type Plugin = {
   name: string;
+  requires?: string[];
   actions: PluginAction<any, any>[];
 };
 
-export const plugins: Plugin[] = [
-  github({
-    username: process.env.GITHUB_USERNAME! || 'testuser',
-    password: process.env.GITHUB_PASSWORD! || 'testpassword',
-  }),
-];
+export const plugins: Plugin[] = [exec()].filter(Boolean);
