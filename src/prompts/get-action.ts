@@ -2,8 +2,6 @@ import { server$ } from '@builder.io/qwik-city';
 import { getActionsWithoutId } from '~/components/actions/actions';
 import { prismaClient } from '~/constants/prisma-client';
 import { plugins } from '~/plugins';
-import { removeNthQueryParams } from '../functions/remove-nth-query-params';
-import { BrowserState } from '@prisma/client';
 
 const getPreviousSteps = async () =>
   `
@@ -26,25 +24,32 @@ const getPluginActions = server$(() => {
     .join('\n');
 });
 
-export const getBrowserState = server$(
-  async (): Promise<BrowserState | null> => {
-    const browserState = await prismaClient!.browserState.findFirst();
-    return browserState;
+const getPluginPromptInfo = server$(() => {
+  if (!plugins.length) {
+    return '';
   }
-);
+  return plugins
+    .map((plugin) => plugin.promptInfo)
+    .filter(Boolean)
+    .join('\n');
+});
 
-const websiteContents = async () => {
-  const browserState = await getBrowserState();
-  if (browserState) {
-    return `
-You are currently on the website: 
-${removeNthQueryParams(browserState.url!, 2)} 
-Which has this current HTML content:
-${browserState.html}
-    `.trim();
+const previousActionState = server$(async () => {
+  const lastAction = await prismaClient!.actions.findFirst({
+    orderBy: {
+      id: 'desc',
+    },
+  });
+  const lastActionResult = lastAction?.result;
+
+  if (!lastActionResult) {
+    return '';
   }
-  return '';
-};
+  return `
+The result of the last action you took was:
+${lastActionResult}
+`;
+});
 
 export const getPrompt = server$(async () => {
   const prompt = await prismaClient!.prompt.findFirst({});
@@ -68,7 +73,7 @@ The actions you can take:
 ${await getPluginActions()}
 
 When you provide a selector, be sure that that selector is actually on the current page you are on. It needs to be in the HTML you are provided or don't use it.
-When providing a shell command, be sure not to use any interactive commands, provide all options upfront.
+${await getPluginPromptInfo()}
 `.trim();
 
 const getAnswers = server$(async () => {
@@ -100,8 +105,6 @@ You are an assitant that takes actions based on a prompt.
 
 The prompt is: ${await getPrompt()}
 
-${await websiteContents()}
-
 ${await getActions()}
 
 ${
@@ -112,6 +115,8 @@ ${previousSteps}
 `.trim()
     : ''
 }
+
+${await previousActionState()}
 
 ${await priorAnswers()}
 

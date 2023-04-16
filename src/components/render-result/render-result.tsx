@@ -15,7 +15,7 @@ import {
 } from '~/routes';
 import { Loading } from '../loading/loading';
 import { getActions, runAndSave } from '../actions/actions';
-import { getBrowserState } from '~/prompts/browse';
+import { getBrowserState } from "~/functions/get-browser-state";
 import { Question } from '../question/question';
 import { prismaClient } from '~/constants/prisma-client';
 

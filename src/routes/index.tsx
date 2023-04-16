@@ -9,12 +9,16 @@ import {
   useVisibleTask$,
 } from '@builder.io/qwik';
 import type { DocumentHead } from '@builder.io/qwik-city';
-import { Actions } from '~/components/actions/actions';
+import {
+  ActionWithId,
+  Actions,
+  getActions,
+} from '~/components/actions/actions';
 import { BrowserState } from '~/components/browser-state/browser-state';
 import { Loading } from '~/components/loading/loading';
 import { Prompt } from '~/components/prompt/prompt';
 import { RenderResult } from '~/components/render-result/render-result';
-import { getBrowsePrompt } from '~/prompts/browse';
+import { getBrowsePrompt } from '~/prompts/get-action';
 import { streamCompletion } from '../functions/stream-completion';
 
 Error.stackTraceLimit = Infinity;
@@ -40,6 +44,8 @@ export const GetCompletionContext = createContextId<QRL<() => Promise<string>>>(
 export const ContinueRunning = createContextId<Signal<boolean>>(
   'index.continueRunning'
 );
+export const ActionsList =
+  createContextId<Signal<ActionWithId[]>>('index.actionsList');
 
 function getDefaultPrompt() {
   return getBrowsePrompt();
@@ -65,6 +71,7 @@ export default component$(() => {
   const promptTextarea = useSignal<HTMLTextAreaElement>();
   const isRunningContinuously = useSignal(false);
   const error = useSignal('');
+  const actions = useSignal([] as ActionWithId[]);
 
   const update = $(async () => {
     output.value = '';
@@ -88,6 +95,7 @@ export default component$(() => {
     return await update();
   });
 
+  useContextProvider(ActionsList, actions);
   useContextProvider(ActionsContext, actionsKey);
   useContextProvider(BrowserStateContext, browserStateKey);
   useContextProvider(GetCompletionContext, hardUpdate);
@@ -105,11 +113,17 @@ export default component$(() => {
     }
   });
 
+  useTask$(async ({ track }) => {
+    track(() => actionsKey.value);
+    // eslint-disable-next-line qwik/valid-lexical-scope
+    actions.value = await getActions();
+  });
+
   return (
     <div class="grid grid-cols-3 gap-10 p-10 max-w-[1900px] mx-auto">
       <div class="w-full flex flex-col gap-6">
         <Prompt />
-        {showGptPrompt && hasBegun.value && (
+        {showGptPrompt && (hasBegun.value || Boolean(actions.value.length)) && (
           <form
             class="flex w-full flex-col px-8 py-6 mx-auto space-y-4 bg-white rounded-md shadow-md"
             preventdefault:submit

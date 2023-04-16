@@ -2,7 +2,7 @@ import { component$, useContext, useSignal, useTask$ } from '@builder.io/qwik';
 import { Card } from '../card/card';
 import { BrowserStateContext } from '~/routes';
 import type { BrowserState as BrowserStateType } from '@prisma/client';
-import { getBrowserState } from '~/prompts/browse';
+import { getBrowserState } from "~/functions/get-browser-state";
 import { Loading } from '../loading/loading';
 
 export const BrowserState = component$(() => {

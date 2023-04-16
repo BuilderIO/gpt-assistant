@@ -5,7 +5,7 @@ import { plugins } from '~/plugins';
 import { promises } from 'fs';
 import { prismaClient } from '~/constants/prisma-client';
 import { removeNthQueryParams } from './remove-nth-query-params';
-import { Actions } from '@prisma/client';
+import type { Actions } from '@prisma/client';
 
 const { readFile, writeFile } = promises;
 
@@ -70,7 +70,7 @@ async function execAction(action: PartialAction) {
     if (pluginAction.name === (action.data as ActionStep).action) {
       const result = await pluginAction.handler({
         context: {},
-        action: action,
+        action: action.data,
       });
       await prismaClient!.actions.update({
         where: { id: action.id },

@@ -22,6 +22,7 @@ export type PluginAction<
 export type Plugin = {
   name: string;
   requires?: string[];
+  promptInfo?: string;
   actions: PluginAction<any, any>[];
 };
 

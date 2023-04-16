@@ -1,14 +1,13 @@
-import {
-  $,
-  component$,
-  useContext,
-  useSignal,
-  useTask$,
-} from '@builder.io/qwik';
+import { $, component$, useContext, useSignal } from '@builder.io/qwik';
 import { Form, globalAction$, server$, z, zod$ } from '@builder.io/qwik-city';
 import { prismaClient } from '~/constants/prisma-client';
 import type { ActionStep } from '~/functions/run-action';
-import { ActionsContext, BrowserStateContext, ContinueRunning } from '~/routes';
+import {
+  ActionsContext,
+  ActionsList,
+  BrowserStateContext,
+  ContinueRunning,
+} from '~/routes';
 import { Card } from '../card/card';
 import { Loading } from '../loading/loading';
 import type { Actions as Action } from '@prisma/client';
@@ -60,7 +59,7 @@ export async function runAndSave(
 export const Actions = component$((props: { class?: string }) => {
   const createTaskAction = useCreateTaskAction();
   const loading = useSignal(false);
-  const actions = useSignal([] as ActionWithId[]);
+  const actions = useContext(ActionsList);
   const actionsContext = useContext(ActionsContext);
   const browserStateContext = useContext(BrowserStateContext);
   const continueRunningContext = useContext(ContinueRunning);
@@ -71,11 +70,6 @@ export const Actions = component$((props: { class?: string }) => {
     // eslint-disable-next-line qwik/valid-lexical-scope
     actions.value = await getActions();
     loading.value = false;
-  });
-
-  useTask$(async ({ track }) => {
-    track(() => actionsContext.value);
-    await updateActions();
   });
 
   const clearActions = $(async () => {
