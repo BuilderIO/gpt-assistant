@@ -101,7 +101,7 @@ export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
   return `
 
-You are an assitant that takes actions based on a prompt.
+You are an assistant that takes actions based on a prompt.
 
 The prompt is: ${await getPrompt()}
 
