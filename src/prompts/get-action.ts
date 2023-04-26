@@ -2,6 +2,8 @@ import { server$ } from '@builder.io/qwik-city';
 import { getActionsWithoutId } from '~/components/actions/actions';
 import { prismaClient } from '~/constants/prisma-client';
 import { plugins } from '~/plugins';
+import { getBrowserState } from '~/functions/get-browser-state';
+import { removeNthQueryParams } from '~/functions/remove-nth-query-params';
 
 const getPreviousSteps = async () =>
   `
@@ -97,6 +99,22 @@ ${JSON.stringify(answers)}
 `;
 }
 
+async function getWebsiteContent(maxLength = 18000) {
+  const state = await getBrowserState();
+
+  if (!state?.html) {
+    return '';
+  }
+
+  return `
+The current website you are on is:
+${removeNthQueryParams(state.url!, 2)}
+
+The HTML of the current website is:
+${state.html.slice(0, maxLength)}
+`.trim();
+}
+
 export async function getBrowsePrompt() {
   const previousSteps = await getPreviousSteps();
   return `
@@ -104,6 +122,8 @@ export async function getBrowsePrompt() {
 You are an assistant that takes actions based on a prompt.
 
 The prompt is: ${await getPrompt()}
+
+${await getWebsiteContent()}
 
 ${await getActions()}
 

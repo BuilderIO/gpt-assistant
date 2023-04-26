@@ -4,7 +4,6 @@ import puppeteer from 'puppeteer';
 import { plugins } from '~/plugins';
 import { promises } from 'fs';
 import { prismaClient } from '~/constants/prisma-client';
-import { removeNthQueryParams } from './remove-nth-query-params';
 import type { Actions } from '@prisma/client';
 
 const { readFile, writeFile } = promises;
@@ -233,7 +232,7 @@ const pluginActions = plugins.map((plugin) => plugin.actions).flat();
 export type PartialAction = Pick<Actions, 'id' | 'data'>;
 
 export const runAction = server$(
-  async (theAction: PartialAction, persist = false, maxLength = 18000) => {
+  async (theAction: PartialAction, persist = false) => {
     const action = theAction.data as ActionStep;
     const needsBrowser = action.action.startsWith('browser.');
 
@@ -335,14 +334,6 @@ export const runAction = server$(
       await page.close();
       await browser.close();
     }
-
-    return `
-You are currently on the website: 
-${removeNthQueryParams(currentUrl!, 2)} 
-
-Which has this current HTML content:
-${html.slice(0, maxLength)}
-`.trim();
   }
 );
 
